@@ -17,9 +17,12 @@
 <!--            <option value="3">12.9寸</option>-->
 <!--        </ui-select>-->
 <!--    </ui-prop>-->
-        <ui-prop name="缩放比例:">
-            <h3 style="margin-top: 10px;">缩放比例:</h3>
-            <ui-input class="flex-2" v-value="imageScale"></ui-input>
+    <ui-prop name="参数设置:">
+        <h3 style="margin-top: 10px;">请输入裁剪文件夹路径:</h3>
+        <ui-input class="flex-2" v-value="resizePath"></ui-input>
+        <h3 style="margin-top: 10px;">缩放比例:</h3>
+        <ui-input class="flex-2" v-value="imageScale"></ui-input>
+    </ui-prop>
 
 </div>
 <hr style="margin: 0 0 0 0 ;"/>
@@ -51,7 +54,7 @@
             <h1 v-if="resizeImageArray && resizeImageArray.length===0"
                 style="width: 100%;height: auto; margin: 0;line-height: 200px;" align="center"
             >
-                拖拽图片到这里
+                请添加图片
             </h1>
 
             <image-item v-if="resizeImageArray && resizeImageArray.length>0" track-by="$index"
@@ -66,10 +69,11 @@
 
 <ui-prop name="常用操作:">
     <ui-input class="flex-1" v-value="imgPath" disabled style="display: none;"></ui-input>
-    <ui-button class="blue" v-on:confirm="onBtnClickSelectPicture">添加图片</ui-button>
-    <ui-button class="green" v-on:confirm="onBtnClickSelectAllPicture">添加所有图片</ui-button>
-    <ui-button class="flex-1" v-on:confirm="onBtnClickOpenDir">打开生成目录</ui-button>
-    <ui-button class="red" v-on:confirm="onBtnClickCleanTmpDir">清空目录</ui-button>
+<!--    <ui-button class="blue" v-on:confirm="onBtnClickSelectPicture">添加图片</ui-button>-->
+    <ui-button class="green" v-on:confirm="onBtnClickSelectAllPicture">添加图片</ui-button>
+    <ui-button class="red" v-on:confirm="onBtnClickClearAllPicture">清空图片</ui-button>
+    <ui-button class="green" v-on:confirm="onBtnClickOpenDir">打开生成目录</ui-button>
+    <ui-button class="red" v-on:confirm="onBtnClickCleanTmpDir">清空导出所有文件</ui-button>
 </ui-prop>
 
 <hr style="margin: 0 0 0 0 ;"/>

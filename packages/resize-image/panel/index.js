@@ -12,9 +12,7 @@ Editor.Panel.extend({
         view: '#view',
         section: '#section'
     },
-
     ready() {
-
         let logCtrl = this.$logTextArea;
         let logListScrollToBottom = function () {
             setTimeout(function () {
@@ -50,7 +48,7 @@ Editor.Panel.extend({
                 //sizeWidth: 0,
                 isLandSpace: false,// 默认竖屏
                 imageScale : 1, //默认缩放为1
-
+                resizePath : "",
                 resizeImageArray: [],  //记录图片修改尺寸路径
             },
             methods: {
@@ -110,6 +108,9 @@ Editor.Panel.extend({
                     let userPath = Electron.remote.app.getPath('userData');
                     return path.join(userPath, "/resizeImage");// 临时目录
                 },
+                _getProjectDir() {
+                    return Editor.Project.path;
+                },
                 _getExportRootDir()
                 {
                    let projectPath = Editor.Project.path;
@@ -121,10 +122,13 @@ Editor.Panel.extend({
                     let projectPath = Editor.Project.path;
                     path = path.replace(projectPath, "");
                     path = path.replaceAll(fileName, "");
-                    path = path.replaceAll("\\", "_");
-                    path = path.replaceAll("\/", "_");
-                    path = path.replaceAll("_assets_", "");
-                    path = path.substring(0, path.lastIndexOf("_"));
+                    path = path.replaceAll("\\", ":");
+                    path = path.replaceAll("\/", ":");
+                   let arr = path.split(":");
+                   path = arr[arr.length - 2];
+                    //path = path.replaceAll("_assets_", "");
+                    //path = path.substring(0, path.lastIndexOf("_"));
+                    //Editor.log("NX: export folder name:" + path);
                     return path;
                 },
                 _createDir(path)  //创建文件夹
@@ -172,17 +176,26 @@ Editor.Panel.extend({
                 },
                 onBtnClickSelectAllPicture()
                 {
-                    Editor.log("NX: OnBtnClickSelectAllPicture");
+                    Editor.log("NX: 选择文件夹 OnBtnClickSelectAllPicture: " +  this.resizePath);
                     this._getAllTextures();
+                },
+                onBtnClickClearAllPicture()
+                {
+                    Editor.log("NX: onBtnClickClearAllPicture");
+                    this.resizeImageArray = [];
                 },
                 _getAllTextures()   //获取所有图片
                 {
                     Editor.assetdb.queryAssets('db://assets/**\/*', ['audio-clip', 'texture'], function (err, results) {
                         this.resizeImageArray = [];
                         results.forEach(function (result) {
-                            let ext = path.extname(result.path);
+                            let filePath = result.path;
+                            let ext = path.extname(filePath);
                             if (ext === '.png' || ext === '.jpg') {
-                                this.resizeImageArray.push(result);
+                               if (this.resizePath && filePath.startsWith(this.resizePath))
+                                {
+                                    this.resizeImageArray.push(result);
+                                }
                             }
                         }.bind(this));
                         //his._sortArr(this.imageArray); // 按照字母排序
@@ -216,10 +229,10 @@ Editor.Panel.extend({
                     this._createDir(pixDir);
                     let desFilePath = path.join(pixDir, fileName);
                     await this._getImgSize(imgPath).then((size)=>{
-                        //Editor.log("NX:" + imgPath   + "图片原始尺寸 " + " W:" + size.width + "H:" + size.height);
-                        let resizeWidth = Number(size.width * this.imageScale);
-                        let resizeHeight = Number(size.height * this.imageScale);
-                        //Editor.log( "NX:" + imgPath   + "图片缩放后尺寸: W:" +  resizeWidth + " H:" + resizeHeight);
+                        Editor.log("NX:" + imgPath   + "图片原始尺寸 " + " W:" + size.width + "H:" + size.height);
+                        let resizeWidth =  Math.round(Number(size.width * this.imageScale));
+                        let resizeHeight = Math.round(Number(size.height * this.imageScale));
+                        Editor.log( "NX:" + imgPath   + "图片缩放后尺寸: W:" +  resizeWidth + " H:" + resizeHeight);
                         sharp(imgPath).resize(resizeWidth, resizeHeight).toFile(desFilePath, function (err, info) {
                             if (err) {
                                 this._addLog("NX:裁剪失败!!!" + imgPath);
@@ -231,7 +244,11 @@ Editor.Panel.extend({
                         }.bind(this));
                     });
                 },
-                onBtnClickResize() {
+                async onBtnClickResize() {
+                    await this._resizeAllImage();
+                },
+                async _resizeAllImage()
+                {
                     this.logView = "";
                     Editor.log("NX:Click Resize");
                     let exportPath = this._getExportRootDir();
@@ -241,10 +258,14 @@ Editor.Panel.extend({
                         this._addLog("NX: 图片缩放设置小于0");
                         return;
                     }
+                    //this._addLog("NX:********************************图片裁剪开始");
+                    Editor.log("NX:********************************图片裁剪开始");
                     for (let i = 0; i < this.resizeImageArray.length; i++) {
                         let item = this.resizeImageArray[i];
-                        this._resizeImage(item.path);
+                        await this._resizeImage(item.path);
                     }
+                    //this._addLog("NX:********************************图片裁剪完成");
+                    Editor.log("NX:********************************图片裁剪完成");
                 },
                 onSelectChange(event) {
                     let value = event.detail.value;
