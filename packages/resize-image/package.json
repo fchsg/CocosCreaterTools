@@ -6,7 +6,8 @@
   "main": "main.js",
   "main-menu": {
     "i18n:MAIN_MENU.package.title/resize-image": {
-      "message": "resize-image:open"
+      "message": "resize-image:open",
+      "accelerator": "CmdOrCtrl+Shift+r"
     }
   },
   "panel": {
