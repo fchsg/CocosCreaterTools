@@ -88,6 +88,10 @@ Editor.Panel.extend({
                 mp3Path: null,
                 mp3Array: [],
                 imageArray: [],
+                compressCustomImagePath:null,
+                compressCustomAudioPath:null,
+                customAudioList: [],
+                customImageList: [],
             },
             methods: {
                 _addLog (str) {
@@ -301,11 +305,176 @@ Editor.Panel.extend({
                     event.stopPropagation();
                     // console.log("dragOver");
                 },
-
+                _getFileList(path) {
+                    var filesList = [];
+                    this._readFile(path, filesList);
+                    return filesList;
+                },
+                _readFile(path, filesList) {
+                    let files = Fs.readdirSync(path);
+                    files.forEach((file) => {
+                        states = Fs.statSync(path + "/" + file);
+                        if (states.isDirectory()) {
+                            this._readFile(path + "/" + file, filesList);
+                        } else {
+                            let fullPath = path + "/" + file
+                            //Editor.log("NX: Custom Search Full Path:" + fullPath);
+                            filesList.push(fullPath);
+                        }
+                    });
+                },
+                _retrieveFiles (type) {             // 检索项目外的图片文件 png, jpg和音频mp3类型文件 type 0 图片文件 1音频文件
+                    let customPath = '';
+                    if(type == 0)
+                    {
+                        customPath = this.compressCustomImagePath;
+                    }
+                    else if(type == 1)
+                    {
+                        customPath = this.compressCustomAudioPath;
+                    }
+                    let fileList =  this._getFileList(customPath);
+                    this.customImageList = [];
+                    this.customAudioList = [];
+                    fileList.forEach(function (result) {
+                        let ext = Path.extname(result);
+                        if ( type == 1 && ext === '.mp3') {
+                            this.customAudioList.push(result);
+                            Editor.log("NX: Audio Path:" + result);
+                        } else if ( type == 0 && (ext === '.png' || ext === '.jpg')) {
+                            this.customImageList.push(result);
+                            Editor.log("NX: Image Path:" + result);
+                        }
+                    }.bind(this));
+                },
+                onDropCustomImageFolder (event) {
+                    event.preventDefault();
+                    let files = event.dataTransfer.files;
+                    if (files.length > 0) {
+                        let file = files[0].path;
+                        this.compressCustomImagePath = file;
+                        Editor.log("NX:选择压缩图片文件夹路径: " + this.compressCustomImagePath);
+                        this._retrieveFiles(0);
+                    } else {
+                        Editor.log("NX:选择压缩图片文件夹为空");
+                    }
+                },
+                onDropCustomAudioFolder (event) {
+                    event.preventDefault();
+                    let files = event.dataTransfer.files;
+                    if (files.length > 0) {
+                        let file = files[0].path;
+                        this.compressCustomAudioPath = file;
+                        Editor.log("NX:选择压缩音频文件夹路径: " + this.compressCustomAudioPath);
+                        this._retrieveFiles(1);
+                    } else {
+                        Editor.log("NX:选择压缩音频文件夹为空");
+                    }
+                },
+                _getRootDir()
+                {
+                    return Editor.Project.path;
+                },
+                _getAssetsDir()
+                {
+                    let projectPath = this._getRootDir();
+                    return Path.join(projectPath, "/assets");
+                },
+                _getBuildDir()
+                {
+                    let projectPath = this._getRootDir();
+                    return Path.join(projectPath, "/build");
+                },
+                onBtnClickOpenCustomPath() {
+                    let openDir = null;
+                    let exportDir = this._getBuildDir();
+                    if (Fs.existsSync(exportDir)) {
+                        openDir = exportDir;
+                    }
+                    if (openDir)
+                    {
+                        Electron.shell.showItemInFolder(openDir);
+                        Electron.shell.beep();
+                    }
+                    else
+                    {
+                        this._addLog("NX:打开目录为空: " + openDir);
+                    }
+                },
+                _copyFile(sourcePath, destPath)
+                {
+                    if (Fs.existsSync(destPath)) {
+                        Fs.unlinkSync(destPath);
+                    }
+                    Fs.copyFile(sourcePath, destPath);
+                },
+                onBtnCustomImageCompress () {
+                    Editor.log("NX:压缩文件开始");
+                    if (this.customImageList && this.customImageList.length <= 0)
+                    {
+                        this._addLog(`NX: 没有找到图片文件`);
+                        return;
+                    }
+                    (async () => {
+                        for (let i = 0; i < this.customImageList.length; i++) {
+                            let fullPath = this.customImageList[i];
+                            this._addLog(`NX:图片开始压缩: ${fullPath}`);
+                            let convertPath = await this._compressImageItem(fullPath);
+                            if (convertPath) {
+                                this._copyFile(convertPath, fullPath);
+                                this._addLog(`NX:图片压缩完成: ${convertPath}`);
+                            } else {
+                                this._addLog(`NX:图片压缩失败：${fullPath}`)
+                            }
+                        }
+                        this._addLog("NX:图片压缩完毕");
+                        Editor.log("NX:图片压缩完毕");
+                    })();
+                },
+                onBtnCustomAudioCompress () {
+                    Editor.log("NX:压缩文件开始");
+                    if (this.customAudioList && this.customAudioList.length <= 0)
+                    {
+                        this._addLog(`NX:没有找到音频文件`);
+                        return;
+                    }
+                    (async () => {
+                        // 处理要压缩的音频文件
+                        for (let i = 0; i < this.customAudioList.length; i++) {
+                            let voiceFile = this.customAudioList[i];
+                            if (!Fs.existsSync(voiceFile)) {
+                                this._addLog("声音文件不存在: " + voiceFile);
+                                return;
+                            }
+                            this._addLog(`NX:压缩开始step1 [${voiceFile}]`);
+                            if (Path.extname(voiceFile) === ".mp3") {
+                                let tempMp3Dir = this._getTempDir();// 临时目录
+                                let dir = Path.dirname(voiceFile);
+                                let arr = voiceFile.split('.');
+                                let fileName = arr[0].substr(dir.length + 1, arr[0].length - dir.length);
+                                let tempMp3Path = Path.join(tempMp3Dir, 'temp_' + fileName + '.mp3');
+                                // 压缩mp3
+                                this._addLog(`NX:压缩开始step2 [${tempMp3Path}]`);
+                                let cmd = `${Tools.lame} -V 0 -q 0 -b 45 -B 80 --abr 64 "${voiceFile}" "${tempMp3Path}"`;
+                                await child_process.execPromise(cmd, null, (err) => {
+                                    this._addLog("出现错误: \n" + err);
+                                });
+                                // 临时文件重命名
+                                let newNamePath = Path.join(tempMp3Dir, fileName + '.mp3');
+                                Fs.renameSync(tempMp3Path, newNamePath);
+                                this._addLog(`压缩成功 [${(i + 1)}/${this.customAudioList.length}]  `);
+                                this._copyFile(newNamePath, voiceFile);
+                                Editor.log("NX:音频文件压缩成功 " + newNamePath);
+                            } else {
+                                console.log("不支持的文件类型:" + voiceFile);
+                            }
+                        }
+                        this._addLog("NX:所有音频压缩完成!");
+                    })();
+                },
             }
         });
     },
-
     messages: {
         'res-compress:hello' (event, target) {
             console.log("刷新文件列表");
