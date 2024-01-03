@@ -1,60 +1,56 @@
 <div id="view" class="scroll">
     <div class="section">
         <ui-section>
-            <div class="header greenColor">指定文件压缩</div>
-            <ui-prop name="导出包(项目外)压缩目录"
-                     v-on:drop="dropFile1"
+            <div class="header redColor">指定项目外音频文件压缩目录</div>
+            <ui-prop name="请选择压缩音频文件"
+                     v-on:drop="dropFile"
                      v-on:dragover="drag"
                      v-on:dragenter="drag"
                      v-on:dragleave="drag">
-                <ui-input v-value="compressPath" class="flex-1"
-                          placeholder="拖拽文件夹或文件到这里">
+                <ui-input v-value="mp3Path" class="flex-1"
+                          placeholder="拖拽文件到这里">
                 </ui-input>
-                <ui-button   v-on:confirm="onBtnClickOpenProjectPath1">打开</ui-button>
-                <ui-button   v-on:confirm="onBtnCompress1">压缩</ui-button>
-            </ui-prop>
-            <ui-prop name="项目内图片压缩目录"
-                     v-on:drop="onDropImageFile"
-                     v-on:dragover="drag"
-                     v-on:dragenter="drag"
-                     v-on:dragleave="drag">
-                <ui-input v-value="compressImagePath" class="flex-1"
-                          placeholder="拖拽文件夹或文件到这里">
-                </ui-input>
-                <ui-button   v-on:confirm="onBtnClickOpenProjectPath">打开</ui-button>
-                <ui-button   v-on:confirm="onBtnClickCompressAllImage">压缩</ui-button>
-            </ui-prop>
-            <ui-prop name="项目内音频压缩目录"
-                     v-on:drop="onDropSoundFile"
-                     v-on:dragover="drag"
-                     v-on:dragenter="drag"
-                     v-on:dragleave="drag">
-                <ui-input v-value="compressSoundPath" class="flex-1"
-                          placeholder="拖拽文件夹或文件到这里">
-                </ui-input>
-                <ui-button   v-on:confirm="onBtnClickOpenProjectPath">打开</ui-button>
-                <ui-button   v-on:confirm="onBtnClickCompressAllMusic">压缩</ui-button>
+                <ui-button v-show=" mp3Path && mp3Path.length > 0" v-on:confirm="onBtnCompress">压缩</ui-button>
+                <ui-button   v-on:confirm="onBtnCompress">压缩</ui-button>
             </ui-prop>
         </ui-section>
+
+        <ui-section>
+            <div class="header redColor">指定项目外图片文件压缩目录</div>
+            <ui-prop name="请选择压缩图片文件"
+                     v-on:drop="dropFile"
+                     v-on:dragover="drag"
+                     v-on:dragenter="drag"
+                     v-on:dragleave="drag">
+                <ui-input v-value="mp3Path" class="flex-1"
+                          placeholder="拖拽文件到这里">
+                </ui-input>
+                <ui-button v-show=" mp3Path && mp3Path.length > 0" v-on:confirm="onBtnCompress">压缩</ui-button>
+                <ui-button   v-on:confirm="onBtnCompress">压缩</ui-button>
+            </ui-prop>
+        </ui-section>
+
         <ui-section>
             <div class="header">
-                <div class="greenColor">音频文件列表</div>
+                <div class="greenColor">项目内所有音频压缩</div>
                 <div class="wrapper layout center horizontal end-justified flex-1" @click="stopPropagation">
-<!--                    <ui-button class='box tiny' v-on:confirm="onBtnClickGetProject">-->
-<!--                        <i class="icon-arrows-cw"></i>-->
-<!--                        刷新列表-->
-<!--                    </ui-button>-->
-<!--                    <ui-button class='box tiny' v-on:confirm="onBtnClickCompressAllMusic">-->
-<!--                        <i class="icon-ok"></i>-->
-<!--                        压缩全部-->
-<!--                    </ui-button>-->
+                    <ui-button class='box tiny' v-on:confirm="onBtnClickGetProject">
+                        <i class="icon-arrows-cw"></i>
+                        刷新列表
+                    </ui-button>
+                    <ui-button class='box tiny' v-on:confirm="onBtnClickCompressAllMusic">
+                        <i class="icon-ok"></i>
+                        压缩全部
+                    </ui-button>
                 </div>
+
             </div>
             <div class="wrapper center layout horizontal">
                 <div class="box flex-1"> 序号</div>
                 <div class="box flex-3"> 文件</div>
                 <div class="box flex-1"> 压缩</div>
             </div>
+
             <!--内容 class="scroll" style="height: 400px;"-->
             <div>
                 <mp3-item track-by="$index" v-for="(index,item) in mp3Array"
@@ -63,21 +59,22 @@
                 </mp3-item>
             </div>
         </ui-section>
+
         <ui-section>
             <div class="header">
-                <div class="greenColor">图片文件列表</div>
-                <div class="wrapper layout center horizontal end-justified flex-1">
-<!--                     @click="stopPropagation">-->
-<!--                    <ui-button class='box tiny' v-on:confirm="onBtnClickGetProject">-->
-<!--                        <i class="icon-arrows-cw"></i>-->
-<!--                        刷新列表-->
-<!--                    </ui-button>-->
-<!--                    <ui-button class='box tiny' v-on:confirm="onBtnClickCompressAllMusic">-->
-<!--                        <i class="icon-ok"></i>-->
-<!--                        压缩全部-->
-<!--                    </ui-button>-->
+                <div class="greenColor">项目内所有图片压缩</div>
+                <div class="wrapper layout center horizontal end-justified flex-1" @click="stopPropagation">
+                    <ui-button class='box tiny' v-on:confirm="onBtnClickGetProject">
+                        <i class="icon-arrows-cw"></i>
+                        刷新列表
+                    </ui-button>
+                    <ui-button class='box tiny' v-on:confirm="onBtnClickCompressAllImage">
+                        <i class="icon-ok"></i>
+                        压缩全部
+                    </ui-button>
                 </div>
             </div>
+
             <div class="wrapper center layout horizontal">
                 <div class="box flex-1"> 序号</div>
                 <div class="box flex-3"> 文件</div>
@@ -87,40 +84,11 @@
             <!--内容 class="scroll" style="height: 400px;"-->
             <div>
                 <image-item track-by="$index" v-for="(index,item) in imageArray"
-                          v-bind:data="item"
-                          v-bind:index="index">
+                            v-bind:data="item"
+                            v-bind:index="index">
                 </image-item>
             </div>
         </ui-section>
-
-<!--        <ui-section>-->
-<!--            <div class="header">-->
-<!--                <div class="greenColor">项目图片压缩</div>-->
-<!--                <div class="wrapper layout center horizontal end-justified flex-1" @click="stopPropagation">-->
-<!--                    <ui-button class='box tiny' v-on:confirm="onBtnClickGetProject">-->
-<!--                        <i class="icon-arrows-cw"></i>-->
-<!--                        刷新列表-->
-<!--                    </ui-button>-->
-<!--                    <ui-button class='box tiny' v-on:confirm="onBtnClickCompressAllImage">-->
-<!--                        <i class="icon-ok"></i>-->
-<!--                        压缩全部-->
-<!--                    </ui-button>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <div class="wrapper center layout horizontal">-->
-<!--                <div class="box flex-1"> 序号</div>-->
-<!--                <div class="box flex-3"> 文件</div>-->
-<!--                <div class="box flex-1"> 压缩</div>-->
-<!--            </div>-->
-
-<!--            &lt;!&ndash;内容 class="scroll" style="height: 400px;"&ndash;&gt;-->
-<!--            <div>-->
-<!--                <image-item track-by="$index" v-for="(index,item) in imageArray"-->
-<!--                            v-bind:data="item"-->
-<!--                            v-bind:index="index">-->
-<!--                </image-item>-->
-<!--            </div>-->
-<!--        </ui-section>-->
     </div>
 
 </div>

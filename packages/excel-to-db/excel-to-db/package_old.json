@@ -1,0 +1,28 @@
+{
+  "name": "excel-to-db",
+  "version": "1.0.0",
+  "description": "The package template for getting started.",
+  "author": "antwand",
+  "main": "main.js",
+  "main-menu": {
+    "导表工具/打开": {
+      "message": "excel-to-db:open"
+    }
+  },
+  "runtime-resource": {
+    "path": "runtime-scripts",
+    "name": "plugin"
+  },
+  "reload": {
+    "ignore": [
+      "runtime-scripts/**/*"
+    ]
+  },
+  "panel": {
+    "main": "panel/index.js",
+    "type": "dockable",
+    "title": "excel-to-db",
+    "width": 480,
+    "height": 320
+  }
+}

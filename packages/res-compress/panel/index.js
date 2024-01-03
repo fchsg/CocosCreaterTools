@@ -53,9 +53,13 @@ let plugin = null;
 Editor.Panel.extend({
     style: Fs.readFileSync(Editor.url('packages://res-compress/panel/index.css'), 'utf-8'),
     template: Fs.readFileSync(Editor.url('packages://res-compress/panel/index.html'), 'utf-8'),
+
+
     $: {
         logTextArea: '#logTextArea',
     },
+
+
     ready () {
         let logCtrl = this.$logTextArea;
         let logListScrollToBottom = function () {
@@ -67,7 +71,7 @@ Editor.Panel.extend({
             el: this.shadowRoot,
             created () {
                 Tools.init();
-                //this.onBtnClickGetProject();
+                this.onBtnClickGetProject();
                 const Msg = Editor.require('packages://res-compress/panel/msg.js');
 
                 this.$root.$on(Msg.CompressImage, (data) => {
@@ -78,15 +82,10 @@ Editor.Panel.extend({
                 })
             },
             init () {
-                Editor.log("NX: 打开图片压缩工具");
-                this.mp3Array = [];
-                this.imageArray = [];
             },
             data: {
                 logView: "",
-                compressPath: null,
-                compressSoundPath: null,
-                compressImagePath: null,
+                mp3Path: null,
                 mp3Array: [],
                 imageArray: [],
             },
@@ -100,78 +99,51 @@ Editor.Panel.extend({
                     event.stopPropagation();
                 },
                 onBtnClickCompressAllMusic () {
-                    this._addLog("NX: 压缩项目内音频文件开始");
+                    console.log("压缩整个项目音频文件");
                     this._compressMp3(this.mp3Array);
                 },
                 onBtnClickCompressAllImage () {
-                    this._addLog("NX: 压缩项目内图片文件开始");
+                    console.log("压缩整个项目图片文件");
                     this._compressImage(this.imageArray);
                 },
-                // 检索项目中的图片文件 png, jpg和音频mp3类型文件
-                onBtnClickGetProject (event, type) {  //type 0:压缩音频文件 1:压缩图片文件
+                // 检索项目中的声音文件mp3类型
+                onBtnClickGetProject (event) {
                     if (event) {
                         event.preventDefault();
                         event.stopPropagation();
                     }
-                    let compressFolder = "";
-                    if(type == 0)
-                    {
-                        this.mp3Array = [];
-                        compressFolder = this.compressSoundPath;
-                    }
-                    else if(type == 1)
-                    {
-                        this.imageArray = [];
-                        compressFolder = this.compressImagePath;
-                    }
-                    Editor.assetdb.queryAssets('db://assets/**\/*', ['audio-clip', 'texture'], function (err, results) {
-                        results.forEach(function (result) {
-                            //Editor.log("NX: Path: " + result.path);
-                            if (result && result.path && result.path.startsWith(compressFolder))
-                            {
-                                let ext = Path.extname(result.path);
-                                if (ext === '.mp3' && type == 0) {
-                                    this.mp3Array.push(result);
-                                } else if ((ext === '.png' || ext === '.jpg') && type == 1) {
-                                    this.imageArray.push(result);
-                                }
-                            }
-                        }.bind(this));
-                        this._sortArr(this.mp3Array);               // 按照字母排序
-                        this._sortArr(this.imageArray);
-                    }.bind(this));
-                },
-                _getFileList(path) {
-                    var filesList = [];
-                    this._readFile(path, filesList);
-                    return filesList;
-                },
-                _readFile(path, filesList) {
-                    let files = Fs.readdirSync(path);
-                    files.forEach((file) => {
-                        states = Fs.statSync(path + "/" + file);
-                        if (states.isDirectory()) {
-                            this._readFile(path + "/" + file, filesList);
-                        } else {
-                            filesList.push(file);
-                        }
-                    });
-                },
-                // 检索项目中的图片文件 png, jpg和音频mp3类型文件
-                _retrieveFiles (type) {  //type:0遍历所有文件 1：遍历图片文件 2：遍历音频文件
-                   let fileList =  this._getFileList(this.compressPath);
                     this.mp3Array = [];
                     this.imageArray = [];
-                    fileList.forEach(function (result) {
-                        let ext = Path.extname(result);
+                    // co(function* () {
+                    //     console.log("11");
+                    //     yield queryAssetsPromise('db://assets/**\/*', ['audio-clip', 'texture'], function (results) {
+                    //         results.forEach(function (result) {
+                    //             let ext = Path.extname(result.path);
+                    //             if (ext === '.mp3') {
+                    //                 this.mp3Array.push(result);
+                    //             } else if (ext === '.png' || ext === '.jpg') {
+                    //                 this.imageArray.push(result);
+                    //             }
+                    //         }.bind(this));
+                    //         console.log("222");
+                    //     }.bind(this));
+                    // }.bind(this));
+                    // return;
+                    Editor.assetdb.queryAssets('db://assets/**\/*', ['audio-clip', 'texture'], function (err, results) {
+                        this.mp3Array = [];
+                        this.imageArray = [];
+                        results.forEach(function (result) {
+                            let ext = Path.extname(result.path);
                             if (ext === '.mp3') {
                                 this.mp3Array.push(result);
                             } else if (ext === '.png' || ext === '.jpg') {
                                 this.imageArray.push(result);
                             }
                         }.bind(this));
-                        this._sortArr(this.mp3Array);  // 按照字母排序
+                        // 按照字母排序
+                        this._sortArr(this.mp3Array);
                         this._sortArr(this.imageArray);
+                    }.bind(this));
                 },
                 _sortArr (arr) {
                     arr.sort(function (a, b) {
@@ -309,71 +281,34 @@ Editor.Panel.extend({
                 },
 
                 onBtnCompress () {
-                    Editor.log("NX:压缩文件开始");
-                    Editor.log("NX:压缩文件结束")
+                    console.log("test");
+                    this.onBtnClickGetProject(null);
+                    this.onBtnClickGetProject(null);
                 },
-                _getExportRootDir()
-                {
-                    let projectPath = Editor.Project.path;
-                    return Path.join(projectPath, "/assets");
-                },
-                onBtnClickOpenProjectPath() {  //打开
-                    let openDir = null;
-                    let exportDir = this._getExportRootDir();
-                    if (Fs.existsSync(exportDir)) {
-                        openDir = exportDir;
-                    }
-                    if (openDir)
-                    {
-                        Electron.shell.showItemInFolder(openDir);
-                        Electron.shell.beep();
-                    }
-                    else
-                    {
-                        Editor.log("NX:打开目录为空: " + openDir);
-                    }
-                },
-                onDropSoundFile (event) {
+                dropFile (event) {
                     event.preventDefault();
                     let files = event.dataTransfer.files;
                     if (files.length > 0) {
                         let file = files[0].path;
                         console.log(file);
-                        this.compressSoundPath = file;
-                        Editor.log("NX:选择压缩音频文件夹路径: " + this.compressSoundPath);
-                        this.onBtnClickGetProject(event, 0);
-                        // this._retrieveFiles(0);
+                        this.mp3Path = file;
                     } else {
-                        Editor.log("NX:选择压缩音频文件夹为空");
-                        this.mp3Array = [];
-                    }
-                },
-                onDropImageFile (event) {
-                    event.preventDefault();
-                    let files = event.dataTransfer.files;
-                    if (files.length > 0) {
-                        let file = files[0].path;
-                        console.log(file);
-                        this.compressImagePath = file;
-                        Editor.log("NX:选择压缩图片文件夹路径: " + this.compressImagePath);
-                        this.onBtnClickGetProject(event, 1);
-                        // this._retrieveFiles(0);
-                    } else {
-                        Editor.log("NX:选择压缩图片文件夹为空");
-                        this.imageArray = [];
+                        console.log("no file");
                     }
                 },
                 drag (event) {
                     event.preventDefault();
                     event.stopPropagation();
+                    // console.log("dragOver");
                 },
+
             }
         });
     },
 
     messages: {
         'res-compress:hello' (event, target) {
-            Editor.log("NX:刷新文件列表");
+            console.log("刷新文件列表");
             // 检测变动的文件里面是否包含mp3
             let b = false;
             for (let i = 0; i < target.length; i++) {
@@ -384,7 +319,7 @@ Editor.Panel.extend({
                 }
             }
             if (b) {
-                //plugin.onBtnClickGetProject();
+                plugin.onBtnClickGetProject();
             } else {
                 // console.log("未发现音频文件,无需刷新:");
             }
