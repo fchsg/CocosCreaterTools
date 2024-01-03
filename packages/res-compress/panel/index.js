@@ -329,14 +329,14 @@ Editor.Panel.extend({
                     if(type == 0)
                     {
                         customPath = this.compressCustomImagePath;
+                        this.customImageList = [];
                     }
                     else if(type == 1)
                     {
                         customPath = this.compressCustomAudioPath;
+                        this.customAudioList = [];
                     }
                     let fileList =  this._getFileList(customPath);
-                    this.customImageList = [];
-                    this.customAudioList = [];
                     fileList.forEach(function (result) {
                         let ext = Path.extname(result);
                         if ( type == 1 && ext === '.mp3') {
@@ -410,7 +410,7 @@ Editor.Panel.extend({
                     Fs.copyFile(sourcePath, destPath);
                 },
                 onBtnCustomImageCompress () {
-                    Editor.log("NX:压缩文件开始");
+                    this._addLog("NX:压缩图片文件开始");
                     if (this.customImageList && this.customImageList.length <= 0)
                     {
                         this._addLog(`NX: 没有找到图片文件`);
@@ -419,13 +419,13 @@ Editor.Panel.extend({
                     (async () => {
                         for (let i = 0; i < this.customImageList.length; i++) {
                             let fullPath = this.customImageList[i];
-                            this._addLog(`NX:图片开始压缩: ${fullPath}`);
+                            //this._addLog(`NX:图片开始压缩: ${fullPath}`);
                             let convertPath = await this._compressImageItem(fullPath);
                             if (convertPath) {
                                 let originSize = this._getFileSize(fullPath);
                                 let compressSize = this._getFileSize(convertPath);
                                 this._copyFile(convertPath, fullPath);
-                                this._addLog(`NX:图片压缩完成: ${fullPath} size: ${originSize} ==> ${compressSize}`);
+                                this._addLog(`NX:图片压缩完成: ${fullPath} size: ${originSize}KB ==> ${compressSize}KB`);
                             } else {
                                 this._addLog(`NX:图片压缩失败：${fullPath}`)
                             }
@@ -435,7 +435,7 @@ Editor.Panel.extend({
                     })();
                 },
                 onBtnCustomAudioCompress () {
-                    Editor.log("NX:压缩文件开始");
+                    this._addLog("NX:压缩音频文件开始");
                     if (this.customAudioList && this.customAudioList.length <= 0)
                     {
                         this._addLog(`NX:没有找到音频文件`);
@@ -449,7 +449,7 @@ Editor.Panel.extend({
                                 this._addLog("声音文件不存在: " + voiceFile);
                                 return;
                             }
-                            this._addLog(`NX:压缩开始step1 [${voiceFile}]`);
+                            //this._addLog(`NX:压缩开始step1 [${voiceFile}]`);
                             if (Path.extname(voiceFile) === ".mp3") {
                                 let tempMp3Dir = this._getTempDir();// 临时目录
                                 let dir = Path.dirname(voiceFile);
@@ -457,7 +457,7 @@ Editor.Panel.extend({
                                 let fileName = arr[0].substr(dir.length + 1, arr[0].length - dir.length);
                                 let tempMp3Path = Path.join(tempMp3Dir, 'temp_' + fileName + '.mp3');
                                 // 压缩mp3
-                                this._addLog(`NX:压缩开始step2 [${tempMp3Path}]`);
+                                //this._addLog(`NX:压缩开始step2 [${tempMp3Path}]`);
                                 let cmd = `${Tools.lame} -V 0 -q 0 -b 45 -B 80 --abr 64 "${voiceFile}" "${tempMp3Path}"`;
                                 await child_process.execPromise(cmd, null, (err) => {
                                     this._addLog("出现错误: \n" + err);
@@ -467,7 +467,7 @@ Editor.Panel.extend({
                                 Fs.renameSync(tempMp3Path, newNamePath);
                                 let originSize = this._getFileSize(voiceFile);
                                 let compressSize = this._getFileSize(newNamePath);
-                                this._addLog(`压缩成功 [${(i + 1)}/${this.customAudioList.length}] voiceFile size: ${originSize} ==> ${compressSize}`);
+                                this._addLog(`压缩完成 [${(i + 1)}/${this.customAudioList.length}] ${voiceFile} size: ${originSize}KB ==> ${compressSize}KB`);
                                 this._copyFile(newNamePath, voiceFile);
                                 Editor.log("NX:音频文件压缩成功 " + newNamePath);
                             } else {
