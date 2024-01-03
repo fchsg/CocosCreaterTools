@@ -103,11 +103,11 @@ Editor.Panel.extend({
                     event.stopPropagation();
                 },
                 onBtnClickCompressAllMusic () {
-                    console.log("压缩整个项目音频文件");
+                    this._addLog("NX:开始压缩项目内全部图片");
                     this._compressMp3(this.mp3Array);
                 },
                 onBtnClickCompressAllImage () {
-                    console.log("压缩整个项目图片文件");
+                    this._addLog("NX:开始压缩项目内全部音频!");
                     this._compressImage(this.imageArray);
                 },
                 // 检索项目中的声音文件mp3类型
@@ -422,8 +422,10 @@ Editor.Panel.extend({
                             this._addLog(`NX:图片开始压缩: ${fullPath}`);
                             let convertPath = await this._compressImageItem(fullPath);
                             if (convertPath) {
+                                let originSize = this._getFileSize(fullPath);
+                                let compressSize = this._getFileSize(convertPath);
                                 this._copyFile(convertPath, fullPath);
-                                this._addLog(`NX:图片压缩完成: ${convertPath}`);
+                                this._addLog(`NX:图片压缩完成: ${fullPath} size: ${originSize} ==> ${compressSize}`);
                             } else {
                                 this._addLog(`NX:图片压缩失败：${fullPath}`)
                             }
@@ -463,7 +465,9 @@ Editor.Panel.extend({
                                 // 临时文件重命名
                                 let newNamePath = Path.join(tempMp3Dir, fileName + '.mp3');
                                 Fs.renameSync(tempMp3Path, newNamePath);
-                                this._addLog(`压缩成功 [${(i + 1)}/${this.customAudioList.length}]  `);
+                                let originSize = this._getFileSize(voiceFile);
+                                let compressSize = this._getFileSize(newNamePath);
+                                this._addLog(`压缩成功 [${(i + 1)}/${this.customAudioList.length}] voiceFile size: ${originSize} ==> ${compressSize}`);
                                 this._copyFile(newNamePath, voiceFile);
                                 Editor.log("NX:音频文件压缩成功 " + newNamePath);
                             } else {
