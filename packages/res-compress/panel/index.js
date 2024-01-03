@@ -53,13 +53,9 @@ let plugin = null;
 Editor.Panel.extend({
     style: Fs.readFileSync(Editor.url('packages://res-compress/panel/index.css'), 'utf-8'),
     template: Fs.readFileSync(Editor.url('packages://res-compress/panel/index.html'), 'utf-8'),
-
-
     $: {
         logTextArea: '#logTextArea',
     },
-
-
     ready () {
         let logCtrl = this.$logTextArea;
         let logListScrollToBottom = function () {
@@ -92,6 +88,8 @@ Editor.Panel.extend({
                 compressCustomAudioPath:null,
                 customAudioList: [],
                 customImageList: [],
+                totalOriginSize:0.0,
+                totalCompressSize:0.0,
             },
             methods: {
                 _addLog (str) {
@@ -103,11 +101,13 @@ Editor.Panel.extend({
                     event.stopPropagation();
                 },
                 onBtnClickCompressAllMusic () {
-                    this._addLog("NX:开始压缩项目内全部图片");
+                    this._addLog("NX:开始压缩项目内全部音频");
+                    this._resetSizeRecord();
                     this._compressMp3(this.mp3Array);
                 },
                 onBtnClickCompressAllImage () {
-                    this._addLog("NX:开始压缩项目内全部音频!");
+                    this._addLog("NX:开始压缩项目内全部图片");
+                    this._resetSizeRecord();
                     this._compressImage(this.imageArray);
                 },
                 // 检索项目中的声音文件mp3类型
@@ -199,11 +199,11 @@ Editor.Panel.extend({
                     (async () => {
                         for (let i = 0; i < dataArr.length; i++) {
                             let data = dataArr[i];
-                            this._addLog(data.path);
                             let file = await this._compressImageItem(data.path);
                             if (file) {
                                 let originSize = this._getFileSize(data.path);
                                 let compressSize = this._getFileSize(file);
+                                this._recordSize(originSize, compressSize);
                                 this._addLog(`压缩成功 [${(i + 1)}/${dataArr.length}]: ${data.url} size: ${originSize}KB ==>${compressSize}KB`);
                                 // 导入到项目原位置
                                 let name = Path.basename(file);
@@ -222,7 +222,7 @@ Editor.Panel.extend({
                                 this._addLog(`图片压缩失败：${data.path}`)
                             }
                         }
-                        this._addLog("NX:项目内图片全部压缩完毕!");
+                        this._addLog(`NX:项目内所有图片压缩完成,压缩前总大小:[${this._KBToMB(this.totalOriginSize)}]MB == >压缩后总大小:[${this._KBToMB(this.totalCompressSize)}]MB`);
                     })();
                 },
 
@@ -258,10 +258,10 @@ Editor.Panel.extend({
                                 let newNamePath = Path.join(tempMp3Dir, fileName + '.mp3');
                                 Fs.renameSync(tempMp3Path, newNamePath);
                                 let compressSize = this._getFileSize(newNamePath);
+                                this._recordSize(originSize, compressSize);
                                 this._addLog(`NX:压缩成功 [${(i + 1)}/${fileDataArray.length}] : ${voiceFileUrl} size: ${originSize}KB ==> ${compressSize}KB`);
                                 let fullFileName = fileName + '.mp3';
                                 let url = voiceFileUrl.substr(0, voiceFileUrl.length - fullFileName.length - 1);
-
                                 // 导入到项目原位置
                                 await importPromise([newNamePath], url, true,
                                     function (results) {
@@ -281,7 +281,7 @@ Editor.Panel.extend({
                                 console.log("不支持的文件类型:" + voiceFile);
                             }
                         }
-                        this._addLog("NX:项目内音频全部处理完毕!");
+                        this._addLog(`NX:项目内所有音频压缩完成,压缩前总大小:[${this._KBToMB(this.totalOriginSize)}]MB == >压缩后总大小:[${this._KBToMB(this.totalCompressSize)}]MB`);
                     })();
                 },
 
@@ -409,8 +409,23 @@ Editor.Panel.extend({
                     }
                     Fs.copyFile(sourcePath, destPath);
                 },
+                _resetSizeRecord()
+                {
+                    this.totalOriginSize = 0;
+                    this.totalCompressSize = 0;
+                },
+                _recordSize(originSize, compressSize)
+                {
+                    this.totalOriginSize = Number(this.totalOriginSize + Number(originSize));
+                    this.totalCompressSize = Number(this.totalCompressSize + Number(compressSize));
+                },
+                _KBToMB(size)
+                {
+                    return (size / 1024).toFixed(2);
+                },
                 onBtnCustomImageCompress () {
                     this._addLog("NX:压缩图片文件开始");
+                    this._resetSizeRecord();
                     if (this.customImageList && this.customImageList.length <= 0)
                     {
                         this._addLog(`NX: 没有找到图片文件`);
@@ -424,18 +439,19 @@ Editor.Panel.extend({
                             if (convertPath) {
                                 let originSize = this._getFileSize(fullPath);
                                 let compressSize = this._getFileSize(convertPath);
+                                this._recordSize(originSize, compressSize);
                                 this._copyFile(convertPath, fullPath);
                                 this._addLog(`NX:图片压缩完成: ${fullPath} size: ${originSize}KB ==> ${compressSize}KB`);
                             } else {
                                 this._addLog(`NX:图片压缩失败：${fullPath}`)
                             }
                         }
-                        this._addLog("NX:图片压缩完毕");
-                        Editor.log("NX:图片压缩完毕");
+                        this._addLog(`NX:所有图片压缩完成,压缩前总大小:[${this._KBToMB(this.totalOriginSize)}]MB == >压缩后总大小:[${this._KBToMB(this.totalCompressSize)}]MB`);
                     })();
                 },
                 onBtnCustomAudioCompress () {
                     this._addLog("NX:压缩音频文件开始");
+                    this._resetSizeRecord();
                     if (this.customAudioList && this.customAudioList.length <= 0)
                     {
                         this._addLog(`NX:没有找到音频文件`);
@@ -467,6 +483,7 @@ Editor.Panel.extend({
                                 Fs.renameSync(tempMp3Path, newNamePath);
                                 let originSize = this._getFileSize(voiceFile);
                                 let compressSize = this._getFileSize(newNamePath);
+                                this._recordSize(originSize, compressSize);
                                 this._addLog(`压缩完成 [${(i + 1)}/${this.customAudioList.length}] ${voiceFile} size: ${originSize}KB ==> ${compressSize}KB`);
                                 this._copyFile(newNamePath, voiceFile);
                                 Editor.log("NX:音频文件压缩成功 " + newNamePath);
@@ -474,7 +491,7 @@ Editor.Panel.extend({
                                 console.log("不支持的文件类型:" + voiceFile);
                             }
                         }
-                        this._addLog("NX:所有音频压缩完成!");
+                        this._addLog(`NX:所有音频压缩完成,压缩前总大小:[${this._KBToMB(this.totalOriginSize)}]MB == >压缩后总大小:[${this._KBToMB(this.totalCompressSize)}]MB`);
                     })();
                 },
                 _getFileSize(path)
