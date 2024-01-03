@@ -202,7 +202,9 @@ Editor.Panel.extend({
                             this._addLog(data.path);
                             let file = await this._compressImageItem(data.path);
                             if (file) {
-                                this._addLog(`压缩成功 [${(i + 1)}/${dataArr.length}]: ${data.url}`);
+                                let originSize = this._getFileSize(data.path);
+                                let compressSize = this._getFileSize(file);
+                                this._addLog(`压缩成功 [${(i + 1)}/${dataArr.length}]: ${data.url} size: ${originSize}KB ==>${compressSize}KB`);
                                 // 导入到项目原位置
                                 let name = Path.basename(file);
                                 let url = data.url.substr(0, data.url.length - name.length - 1);
@@ -220,7 +222,7 @@ Editor.Panel.extend({
                                 this._addLog(`图片压缩失败：${data.path}`)
                             }
                         }
-                        this._addLog("压缩完毕!");
+                        this._addLog("NX:项目内图片全部压缩完毕!");
                     })();
                 },
 
@@ -240,14 +242,13 @@ Editor.Panel.extend({
                                 this._addLog("声音文件不存在: " + voiceFile);
                                 return;
                             }
-
                             if (Path.extname(voiceFile) === ".mp3") {
+                                let originSize = this._getFileSize(voiceFile);
                                 let tempMp3Dir = this._getTempDir();// 临时目录
                                 let dir = Path.dirname(voiceFile);
                                 let arr = voiceFile.split('.');
                                 let fileName = arr[0].substr(dir.length + 1, arr[0].length - dir.length);
                                 let tempMp3Path = Path.join(tempMp3Dir, 'temp_' + fileName + '.mp3');
-
                                 // 压缩mp3
                                 let cmd = `${Tools.lame} -V 0 -q 0 -b 45 -B 80 --abr 64 "${voiceFile}" "${tempMp3Path}"`;
                                 await child_process.execPromise(cmd, null, (err) => {
@@ -256,8 +257,8 @@ Editor.Panel.extend({
                                 // 临时文件重命名
                                 let newNamePath = Path.join(tempMp3Dir, fileName + '.mp3');
                                 Fs.renameSync(tempMp3Path, newNamePath);
-                                this._addLog(`压缩成功 [${(i + 1)}/${fileDataArray.length}] : ${voiceFileUrl} `);
-
+                                let compressSize = this._getFileSize(newNamePath);
+                                this._addLog(`NX:压缩成功 [${(i + 1)}/${fileDataArray.length}] : ${voiceFileUrl} size: ${originSize}KB ==> ${compressSize}KB`);
                                 let fullFileName = fileName + '.mp3';
                                 let url = voiceFileUrl.substr(0, voiceFileUrl.length - fullFileName.length - 1);
 
@@ -280,7 +281,7 @@ Editor.Panel.extend({
                                 console.log("不支持的文件类型:" + voiceFile);
                             }
                         }
-                        this._addLog("处理完毕!");
+                        this._addLog("NX:项目内音频全部处理完毕!");
                     })();
                 },
 
@@ -471,6 +472,26 @@ Editor.Panel.extend({
                         }
                         this._addLog("NX:所有音频压缩完成!");
                     })();
+                },
+                _getFileSize(path)
+                {
+                    let size = 0;
+                    if (Fs.existsSync(path))
+                    {
+                        let stats = Fs.statSync(path);
+                        size = (stats.size / 1024).toFixed(2);
+                    }
+                    return size;
+                },
+                onClearLog()
+                {
+                    this.logView = "";
+                },
+                onTest() //测试接口
+                {
+                    let path = this.imageArray[0].path;
+                    let size = this._getFileSize(path);
+                    Editor.log(`NX: path: ${path} size: ${size}`);
                 },
             }
         });
