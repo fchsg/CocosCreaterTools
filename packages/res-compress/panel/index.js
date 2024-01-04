@@ -90,6 +90,7 @@ Editor.Panel.extend({
                 customImageList: [],
                 totalOriginSize:0.0,
                 totalCompressSize:0.0,
+                ErrorCompressImageList:[],
             },
             methods: {
                 _addLog (str) {
@@ -107,6 +108,7 @@ Editor.Panel.extend({
                 },
                 onBtnClickCompressAllImage () {
                     this._addLog("NX:开始压缩项目内全部图片");
+                    this.ErrorCompressImageList = [];
                     this._resetSizeRecord();
                     this._compressImage(this.imageArray);
                 },
@@ -169,7 +171,8 @@ Editor.Panel.extend({
                         //const IsPng = Editor.require('packages://res-compress/node_modules/is-png')
                         //if (IsPng(Fs.readFileSync(file))) {
                             // 参数文档： https://pngquant.org/
-                            let quality = '65-80'; // 图像质量
+                            // 打印cmd log --verbose
+                            let quality = '60-85'; // 图像质量
                             cmd = `${Tools.pngquant} --transbug --force 256 --output "${output}" --quality ${quality} "${file}"`;
                         //}
                     } else if (ext === '.jpeg' || ext === '.jpg') {
@@ -189,8 +192,15 @@ Editor.Panel.extend({
                         //}
                     }
                     if (cmd) {
-                        await child_process.execPromise(cmd);
-                        return output;
+                        try{
+                            await child_process.execPromise(cmd);
+                            return output;
+                        }
+                        catch (e) {
+                            this._addLog("NX:Error 图片压缩失败:" + file);
+                            this.ErrorCompressImageList.push(file);
+                            return null;
+                        }
                     } else {
                         return null;
                     }
@@ -221,6 +231,15 @@ Editor.Panel.extend({
                             } else {
                                 this._addLog(`图片压缩失败：${data.path}`)
                             }
+                        }
+                        if (this.ErrorCompressImageList.length > 0)
+                        {
+                            this._addLog(`NX:压缩失败图片~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
+                            for (let i = 0; i < this.ErrorCompressImageList.length; i++) {
+                                let path = this.ErrorCompressImageList[i];
+                                this._addLog(path);
+                            }
+                            this._addLog(`NX:压缩失败图片~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
                         }
                         this._addLog(`NX:项目内所有图片压缩完成,压缩前总大小:[${this._KBToMB(this.totalOriginSize)}]MB == >压缩后总大小:[${this._KBToMB(this.totalCompressSize)}]MB`);
                     })();
@@ -426,6 +445,7 @@ Editor.Panel.extend({
                 onBtnCustomImageCompress () {
                     this._addLog("NX:压缩图片文件开始");
                     this._resetSizeRecord();
+                    this.ErrorCompressImageList = []
                     if (this.customImageList && this.customImageList.length <= 0)
                     {
                         this._addLog(`NX: 没有找到图片文件`);
@@ -445,6 +465,15 @@ Editor.Panel.extend({
                             } else {
                                 this._addLog(`NX:图片压缩失败：${fullPath}`)
                             }
+                        }
+                        if (this.ErrorCompressImageList.length > 0)
+                        {
+                            this._addLog(`NX:压缩失败图片~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
+                            for (let i = 0; i < this.ErrorCompressImageList.length; i++) {
+                                let path = this.ErrorCompressImageList[i];
+                                this._addLog(path);
+                            }
+                            this._addLog(`NX:压缩失败图片~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
                         }
                         this._addLog(`NX:所有图片压缩完成,压缩前总大小:[${this._KBToMB(this.totalOriginSize)}]MB == >压缩后总大小:[${this._KBToMB(this.totalCompressSize)}]MB`);
                     })();
