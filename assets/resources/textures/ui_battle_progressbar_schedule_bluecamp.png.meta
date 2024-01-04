@@ -1,0 +1,38 @@
+{
+  "ver": "2.3.7",
+  "uuid": "f9fc5194-a983-48a5-a851-8ccd799dfa9c",
+  "importer": "texture",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "genMipmaps": false,
+  "packable": true,
+  "width": 47,
+  "height": 32,
+  "platformSettings": {},
+  "subMetas": {
+    "ui_battle_progressbar_schedule_bluecamp": {
+      "ver": "1.0.6",
+      "uuid": "adbfe0bc-8159-4660-8742-802fcaf969c5",
+      "importer": "sprite-frame",
+      "rawTextureUuid": "f9fc5194-a983-48a5-a851-8ccd799dfa9c",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": 0,
+      "trimX": 0,
+      "trimY": 0,
+      "width": 47,
+      "height": 32,
+      "rawWidth": 47,
+      "rawHeight": 32,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}

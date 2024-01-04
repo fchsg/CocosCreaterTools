@@ -1,0 +1,38 @@
+{
+  "ver": "2.3.7",
+  "uuid": "3119894d-e9bb-482b-b8ce-6af9a4d8ab78",
+  "importer": "texture",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "genMipmaps": false,
+  "packable": true,
+  "width": 46,
+  "height": 62,
+  "platformSettings": {},
+  "subMetas": {
+    "ui_common_progressbar_skill_bluecamp": {
+      "ver": "1.0.6",
+      "uuid": "964cc88c-59f4-4fe0-af58-f61b2c4bea17",
+      "importer": "sprite-frame",
+      "rawTextureUuid": "3119894d-e9bb-482b-b8ce-6af9a4d8ab78",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": 0,
+      "trimX": 0,
+      "trimY": 0,
+      "width": 46,
+      "height": 62,
+      "rawWidth": 46,
+      "rawHeight": 62,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}

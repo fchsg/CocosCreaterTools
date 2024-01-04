@@ -1,0 +1,38 @@
+{
+  "ver": "2.3.7",
+  "uuid": "714242a8-9155-48a2-a84d-fc98eeb26e92",
+  "importer": "texture",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "genMipmaps": false,
+  "packable": true,
+  "width": 86,
+  "height": 119,
+  "platformSettings": {},
+  "subMetas": {
+    "ui_battle_skillpanel_left_01": {
+      "ver": "1.0.6",
+      "uuid": "1494fba2-904f-4fb0-8490-179ca477c515",
+      "importer": "sprite-frame",
+      "rawTextureUuid": "714242a8-9155-48a2-a84d-fc98eeb26e92",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": 0,
+      "trimX": 0,
+      "trimY": 0,
+      "width": 86,
+      "height": 119,
+      "rawWidth": 86,
+      "rawHeight": 119,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}

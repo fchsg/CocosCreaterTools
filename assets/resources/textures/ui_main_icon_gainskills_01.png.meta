@@ -1,0 +1,38 @@
+{
+  "ver": "2.3.7",
+  "uuid": "19692f07-1e99-42b1-be18-53a7dcc133cc",
+  "importer": "texture",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "genMipmaps": false,
+  "packable": true,
+  "width": 90,
+  "height": 107,
+  "platformSettings": {},
+  "subMetas": {
+    "ui_main_icon_gainskills_01": {
+      "ver": "1.0.6",
+      "uuid": "c579257b-233d-448a-ae73-b0f43c626857",
+      "importer": "sprite-frame",
+      "rawTextureUuid": "19692f07-1e99-42b1-be18-53a7dcc133cc",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": 0,
+      "trimX": 0,
+      "trimY": 0,
+      "width": 90,
+      "height": 107,
+      "rawWidth": 90,
+      "rawHeight": 107,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}

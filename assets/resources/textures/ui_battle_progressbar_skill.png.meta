@@ -1,0 +1,38 @@
+{
+  "ver": "2.3.7",
+  "uuid": "60ef38d3-32f0-40de-a22b-557f2136616f",
+  "importer": "texture",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "genMipmaps": false,
+  "packable": true,
+  "width": 68,
+  "height": 83,
+  "platformSettings": {},
+  "subMetas": {
+    "ui_battle_progressbar_skill": {
+      "ver": "1.0.6",
+      "uuid": "1501fd89-0cf1-4fc6-b1b0-dae45555940a",
+      "importer": "sprite-frame",
+      "rawTextureUuid": "60ef38d3-32f0-40de-a22b-557f2136616f",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": 0,
+      "trimX": 0,
+      "trimY": 0,
+      "width": 68,
+      "height": 83,
+      "rawWidth": 68,
+      "rawHeight": 83,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}
