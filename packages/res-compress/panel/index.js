@@ -162,6 +162,11 @@ Editor.Panel.extend({
                         return numA - numB;
                     })
                 },
+
+
+
+
+
                 async _compressImageItem (file) {
                     let tmp = this._getTempDir();
                     let ext = Path.extname(file);
@@ -537,11 +542,21 @@ Editor.Panel.extend({
                 {
                     this.logView = "";
                 },
-                onTest() //测试接口
+                async onTest() //测试接口
                 {
-                    let path = this.imageArray[0].path;
-                    let size = this._getFileSize(path);
-                    Editor.log(`NX: path: ${path} size: ${size}`);
+                    //文件尺寸
+                    // let path = this.imageArray[0].path;
+                    // let size = this._getFileSize(path);
+                    // Editor.log(`NX: path: ${path} size: ${size}`);
+
+                    Editor.log('process start');
+
+                    let dir = Editor.url('packages://res-compress/tools');
+                    Editor.log('dir:' + dir);
+                    let cmd = 'cd /d D:/github/CocosCreaterTools/packages/res-compress/tools/node_image_compress && node.exe D:\\github\\CocosCreaterTools\\packages\\res-compress\\tools\\node_image_compress\\node_modules\\gulp\\bin\\gulp.js compress';
+                    await child_process.execPromise(cmd);
+
+                    Editor.log('process end');
                 },
             }
         });
