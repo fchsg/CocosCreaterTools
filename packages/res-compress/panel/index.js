@@ -549,14 +549,14 @@ Editor.Panel.extend({
                     // let size = this._getFileSize(path);
                     // Editor.log(`NX: path: ${path} size: ${size}`);
 
-                    Editor.log('process start');
-
-                    let dir = Editor.url('packages://res-compress/tools');
-                    Editor.log('dir:' + dir);
-                    let cmd = 'cd /d D:/github/CocosCreaterTools/packages/res-compress/tools/node_image_compress && node.exe D:\\github\\CocosCreaterTools\\packages\\res-compress\\tools\\node_image_compress\\node_modules\\gulp\\bin\\gulp.js compress';
+                    //图片文件压缩
+                    this._addLog('process start...');
+                    let source = 'C:\\Users\\ej.frankzn\\Desktop\\source';
+                    let dest = 'C:\\Users\\ej.frankzn\\Desktop\\dest';
+                    let cmd = `${Tools.node_image_compress} --sourcePath ${source}  --destPath ${dest}`;
+                    this._addLog("NX:node compress cmd:" + cmd);
                     await child_process.execPromise(cmd);
-
-                    Editor.log('process end');
+                    this._addLog('process end...');
                 },
             }
         });

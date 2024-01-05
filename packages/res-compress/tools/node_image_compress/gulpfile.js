@@ -4,6 +4,7 @@ import cache from 'gulp-cache';
 import smushit from 'gulp-smushit';
 import gutil from 'gulp-util';
 import  imageminOptipng from 'imagemin-optipng'
+import minimist from 'minimist';
 //
 // let source = 'C:/Users/ej.frankzn/Desktop/source/*';
 // let dest = 'C:/Users/ej.frankzn/Desktop/dest'
@@ -22,12 +23,40 @@ import  imageminOptipng from 'imagemin-optipng'
 //             gutil.log(err);})
 // });
 
-const imagesPath = 'C:/Users/ej.frankzn/Desktop/source';
+const defaultSourcePath = 'C:/Users/ej.frankzn/Desktop/source';
+const defaultDestPath = 'C:/Users/ej.frankzn/Desktop/dest';
 const imagesType = "/**/*.{png,jpeg,gif}";
-const distImagesPath = 'C:/Users/ej.frankzn/Desktop/dest';
+
+let sourceOption = {
+    string: 'sourcePath',
+    default: { defaultSourcePath}
+};
+
+let destOption = {
+    string:  'destPath',
+    default: { defaultDestPath}
+};
+
+let sOptions = minimist(process.argv.slice(2), sourceOption);
+let dOptions = minimist(process.argv.slice(3), destOption);
 
 gulp.task('clearCache', function () {
     return cache.clearAll();
+});
+
+gulp.task('compress', function () {
+    return gulp.src(sOptions.sourcePath + imagesType)
+        .pipe(cache(imagemin({
+            progressive: true,
+            use: [imageminOptipng()]
+        })))
+        .pipe(smushit({
+            verbose: true
+        }))
+        .pipe(gulp.dest(dOptions.destPath))
+        .on('error', function (err) {
+            gutil.log(err);
+        })
 });
 
 gulp.task('compress_pngquant', function () {
@@ -54,21 +83,6 @@ gulp.task('compress_pngquant', function () {
             {
                 verbose: true
             })))
-        .pipe(gulp.dest(distImagesPath))
-        .on('error', function (err) {
-            gutil.log(err);
-        })
-});
-
-gulp.task('compress', function () {
-    return gulp.src(imagesPath + imagesType)
-        .pipe(cache(imagemin({
-            progressive: true,
-            use: [imageminOptipng()]
-        })))
-        .pipe(smushit({
-            verbose: true
-        }))
         .pipe(gulp.dest(distImagesPath))
         .on('error', function (err) {
             gutil.log(err);
@@ -140,26 +154,8 @@ gulp.task('optipng', function (cb) {
 //     done();
 // }));
 
-gulp.task('compress-Build', gulp.series('clearCache', 'compress', function (done) {
-    console.log("compress-Build压缩图片完成!!!")
+gulp.task('compress-build', gulp.series('clearCache', 'compress', function (done) {
+    console.log("compress-build压缩图片完成!!!");
     done();
 }));
 
-// gulp.task('default',['css','watch']);
-
-
-// function compressTask() {
-//     return gulp.src(source).pipe(cache(imagemin(
-//         {
-//             progressive: true,
-//             use: [imageminOptipng()]
-//         })))
-//         .pipe(smushit({
-//             verbose: true
-//         }))
-//         .pipe(gulp.dest(dest))
-//         .on('error', function (err) {
-//             gutil.log(err);})
-// }
-
-//exports.default = compressTask

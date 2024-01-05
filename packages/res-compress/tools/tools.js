@@ -6,11 +6,13 @@ module.exports = {
     lame: null,
     jpegtran: null,
     pngquant: null,
+    node_image_compress:null,
 
     init () {
         this.lame = this._lame();
         this.jpegtran = this._jpegtran();
         this.pngquant = this._pngquant();
+        this.node_image_compress = this._nodeImageCompress();
     },
     // 设置运行权限
     setRunAuthority (file) {
@@ -65,5 +67,24 @@ module.exports = {
             this.pngquant = url;
         }
         return this.pngquant;
+    },
+    _nodeImageCompress()
+    {
+        if (this.node_image_compress === null) {
+            let url = null;
+            if (process.platform === 'darwin')
+            {
+                let toolsFolder = Path.join(this.dir, 'node_image_compress')
+                url = `cd ${toolsFolder} && node ${toolsFolder}/node_modules/gulp/bin/gulp.js compress-build`;
+                this.setRunAuthority(url)
+            }
+            else
+            {
+                let toolsFolder = Path.join(this.dir, 'node_image_compress')
+                url = `cd /d ${toolsFolder} && node.exe ${toolsFolder}/node_modules/gulp/bin/gulp.js compress-build`;
+            }
+            this.node_image_compress = url;
+        }
+        return this.node_image_compress;
     }
 }
