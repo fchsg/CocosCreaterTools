@@ -10,9 +10,10 @@
                 <ui-input v-value="compressCustomAudioPath" class="flex-1"
                           placeholder="拖拽文件到这里">
                 </ui-input>
-                <ui-button   v-on:confirm="onBtnClickOpenCustomPath">打开</ui-button>
+                <ui-button   v-on:confirm="onBtnClickOpenAudioFolder">打开文件夹</ui-button>
+                <ui-button   v-on:confirm="onBtnClickOpenAudioFile">打开文件</ui-button>
                 <ui-button   v-on:confirm="onBtnCustomAudioCompress">压缩</ui-button>
-                <ui-button   v-on:confirm="onTest">测试</ui-button>
+<!--                <ui-button   v-on:confirm="onTest">测试</ui-button>-->
             </ui-prop>
         </ui-section>
 
@@ -26,7 +27,8 @@
                 <ui-input v-value="compressCustomImagePath" class="flex-1"
                           placeholder="拖拽文件到这里">
                 </ui-input>
-                <ui-button   v-on:confirm="onBtnClickOpenCustomPath">打开</ui-button>
+                <ui-button   v-on:confirm="onBtnClickOpenImageFolder">打开文件夹</ui-button>
+                <ui-button   v-on:confirm="onBtnClickOpenImageFile">打开文件</ui-button>
                 <ui-button   v-on:confirm="onBtnCustomImageCompress">压缩</ui-button>
             </ui-prop>
         </ui-section>

@@ -412,20 +412,80 @@ Editor.Panel.extend({
                     let projectPath = this._getRootDir();
                     return Path.join(projectPath, "/build");
                 },
-                onBtnClickOpenCustomPath() {
+                _getOpenDefaultFolder()
+                {
                     let openDir = null;
                     let exportDir = this._getBuildDir();
                     if (Fs.existsSync(exportDir)) {
                         openDir = exportDir;
                     }
-                    if (openDir)
-                    {
-                        Electron.shell.showItemInFolder(openDir);
-                        Electron.shell.beep();
+                    else {
+                        openDir = Editor.Project.path;
+                    }
+                    return openDir;
+                },
+                onBtnClickOpenImageFolder() {
+                    let defaultFolder = this._getOpenDefaultFolder();
+                    let res = Editor.Dialog.openFile({
+                        title: "选择资源压缩目录或文件",
+                        defaultPath: defaultFolder,
+                        properties: ['openDirectory'],
+                    });
+                    if (res !== -1) {
+                        let dir = res[0];
+                        this.compressCustomImagePath = dir;
                     }
                     else
                     {
-                        this._addLog("NX:打开目录为空: " + openDir);
+                        this._addLog("NX:打开目录为空: ");
+                    }
+                },
+                onBtnClickOpenImageFile() {
+                    let defaultFolder = this._getOpenDefaultFolder();
+                    let res = Editor.Dialog.openFile({
+                        title: "选择资源压缩目录或文件",
+                        defaultPath: defaultFolder,
+                        properties: ['openFile'],
+                    });
+                    if (res !== -1) {
+                        let dir = res[0];
+                        this.compressCustomImagePath = dir;
+                    }
+                    else
+                    {
+                        this._addLog("NX:打开目录为空: ");
+                    }
+                },
+                onBtnClickOpenAudioFolder() {
+                    let defaultFolder = this._getOpenDefaultFolder();
+                    let res = Editor.Dialog.openFile({
+                        title: "选择资源压缩目录或文件",
+                        defaultPath: defaultFolder,
+                        properties: ['openDirectory'],
+                    });
+                    if (res !== -1) {
+                        let dir = res[0];
+                        this.compressCustomAudioPath = dir;
+                    }
+                    else
+                    {
+                        this._addLog("NX:打开目录为空: ");
+                    }
+                },
+                onBtnClickOpenAudioFile() {
+                    let defaultFolder = this._getOpenDefaultFolder();
+                    let res = Editor.Dialog.openFile({
+                        title: "选择资源压缩目录或文件",
+                        defaultPath: defaultFolder,
+                        properties: ['openFile'],
+                    });
+                    if (res !== -1) {
+                        let dir = res[0];
+                        this.compressCustomAudioPath = dir;
+                    }
+                    else
+                    {
+                        this._addLog("NX:打开目录为空: ");
                     }
                 },
                 _copyFile(sourcePath, destPath)
