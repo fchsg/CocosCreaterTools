@@ -51,3 +51,4 @@ Thumbs.db
 
 .vscode/
 ResizeImgExport
+packages/res-compress/tools/tinypngjs/image

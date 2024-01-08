@@ -34,45 +34,53 @@ class TinyPng {
                 .then((res) => {
                     compressed++;
                     if (!!onprogress) {
-                        onprogress(res, compressed / total);
+                        onprogress(res, compressed / total, curpath);
                     }
                 })
                 .catch((err) => {
                     compressed++;
-                    onprogress(false, compressed / total, err);
+                    onprogress(false, compressed / total, curpath, err);
                 });
         }
         return true;
     }
-    static async compress(from, out, onprogress) {
-        if (!from) {
-            throw new Error('请传入要压缩的文件夹');
+    static async compress(imageFolder, onprogress) {
+        if (!imageFolder) {
+            throw new Error('NX:请传入要压缩的文件夹');
         }
-        if (!out) {
-            out = from;
+        //let imageList = await this.getAllImg(from);
+        let imageList = this.retrieveFiles(imageFolder);
+
+        // for (let i = 0; i < imageList.length; i++) //log
+        // {
+        //     let path = imageList[i];
+        //     console.log(`NX:find image path:${path}`);
+        // }
+
+        if (!imageList || imageList.length == 0) {
+            throw new Error('NX:没有获取到图片文件');
         }
-        var imagelist = await this.getAllImg(from);
-        if (!imagelist || imagelist.length == 0) {
-            throw new Error('没有获取到图片文件');
-        }
-        var total = imagelist.length;
+        var total = imageList.length;
         var compressed = 0;
-        for (var i in imagelist) {
-            let curpath = imagelist[i].path;
-            let relative = path.relative(from, curpath);
-            let outputPath = path.resolve(out, relative);
-            TinyPng.compressImg(curpath, outputPath)
-                .then((res) => {
-                    compressed++;
-                    if (!!onprogress) {
-                        onprogress(res, compressed / total);
-                    }
-                })
-                .catch((err) => {
-                    compressed++;
-                    onprogress(false, compressed / total, err);
-                });
+        let compressList = [];
+        for (let i in imageList)
+        {
+            let curPath = imageList[i];
+            let outputPath = curPath;
+            compressList.push(TinyPng.compressImg(curPath, outputPath)
+                    .then((res) => {
+                        compressed++;
+                        if (!!onprogress) {
+                            onprogress(true, outputPath, compressed / total);
+                        }
+                    })
+                    .catch((err) => {
+                        compressed++;
+                        onprogress(false, outputPath, compressed / total, err);
+                    })
+            );
         }
+        await Promise.all(compressList);
         return true;
     }
     static getPlugins(extname) {
@@ -85,8 +93,7 @@ class TinyPng {
         return plugins;
     }
     static uploadImage(imageData) {
-        //上传到tinypng进行压缩
-        if (!imageData || imageData.length > max) {
+        if (!imageData || imageData.length > max) {         //上传到tinypng进行压缩
             return false;
         }
         return new Promise(async (resolve, reject) => {
@@ -115,14 +122,14 @@ class TinyPng {
 
     static async compressImg(from, out, disableTiny) {
         if (!from) {
-            throw new Error('请传入正确的from');
+            throw new Error('NX:请传入正确的文件');
         }
         if (!out) {
             out = from;
         }
         var exists = await fse.exists(from);
         if (!exists) {
-            throw new Error('传入的文件不存在');
+            throw new Error('NX:传入的文件不存在');
         }
         var imageData;
         var stat;
@@ -205,12 +212,50 @@ class TinyPng {
             });
         });
     }
-    static async getAllImg(file) {
-        var imgs = await Files.getTree(file, false, null, function (file) {
+
+   static getFileList(path)
+    {
+        var filesList = [];
+        this.readFile(path, filesList);
+        return filesList;
+    }
+    static readFile(path, filesList)
+    {
+        let files = fs.readdirSync(path);
+        files.forEach((file) => {
+            let states = fs.statSync(path + "/" + file);
+            if (states.isDirectory()) {
+                this.readFile(path + "/" + file, filesList);
+            } else {
+                let fullPath = path + "/" + file
+                filesList.push(fullPath);
+            }
+        });
+    }
+    static retrieveFiles (findFolder)     //根据文件根目录遍历所有图片 png jpg jpeg
+    {
+        let customImageList = [];
+        let fileList =  this.getFileList(findFolder);
+        for (let i = 0; i < fileList.length; i++)
+        {
+            let file = fileList[i];
+            let ext = path.extname(file).toLowerCase();
+            if  (ext === '.png' || ext === '.jpg' || ext == '.jpeg')
+            {
+                customImageList.push(file);
+                //console.log("NX: Image Path:" + file);
+            }
+        }
+        return customImageList;
+    }
+
+    static async getAllImg(file)
+    {
+        let imgList = await Files.getTree(file, false, null, function (file) {
             var extname = path.extname(file).toLowerCase();
             return !extname || !exts.includes(extname);
         });
-        return imgs;
+        return imgList;
     }
 }
 module.exports = TinyPng;

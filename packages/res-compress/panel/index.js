@@ -162,11 +162,6 @@ Editor.Panel.extend({
                         return numA - numB;
                     })
                 },
-
-
-
-
-
                 async _compressImageItem (file) {
                     let tmp = this._getTempDir();
                     let ext = Path.extname(file);

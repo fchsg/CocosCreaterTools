@@ -37,7 +37,7 @@ function updateCache(obj) {
     });
 }
 
-class Utli {
+class Utli {  //拼接tinyPng 头信息 随机Ip
     static async getOptions() {
         //生成请求头部
         var time = Date.now();
