@@ -4,7 +4,7 @@ var fse = require("fs-extra");
 var TinyPngjs = require("./index");
 let timestamp = 0;
 
-var folder = "D:\\github\\CocosCreaterTools\\packages\\res-compress\\tools\\tinypngjs\\image";
+var folder =  process.argv[2] // "D:\\github\\CocosCreaterTools\\packages\\res-compress\\tools\\tinypngjs\\image";
 
 function createErr(msg) {
 	return new Promise(async (resolve, reject) => {

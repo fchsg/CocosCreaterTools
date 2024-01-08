@@ -4,6 +4,7 @@ const Path = require('fire-path');
 const Electron = require('electron');
 const Tools = Editor.require('packages://res-compress/tools/tools.js');
 const child_process = require('child_process');
+const {imageminCompress} = require("../tools/tools");
 
 Editor.require('packages://res-compress/panel/item/mp3item.js')();
 Editor.require('packages://res-compress/panel/item/image-item.js')();
@@ -544,14 +545,23 @@ Editor.Panel.extend({
                     // let size = this._getFileSize(path);
                     // Editor.log(`NX: path: ${path} size: ${size}`);
 
-                    //图片文件压缩
-                    this._addLog('process start...');
-                    let source = 'C:\\Users\\ej.frankzn\\Desktop\\source';
-                    let dest = 'C:\\Users\\ej.frankzn\\Desktop\\dest';
-                    let cmd = `${Tools.node_image_compress} --sourcePath ${source}  --destPath ${dest}`;
-                    this._addLog("NX:node compress cmd:" + cmd);
+
+
+                    let imageFolder = 'D:\\github\\CocosCreaterTools\\packages\\res-compress\\tools\\tinypngjs\\image';
+                    //图片压缩 imagemin build
+                    this._addLog('process imagemin build start...');
+                    let source = imageFolder;
+                    let dest = imageFolder;
+                    let cmd = `${Tools.imageminCompress} --sourcePath ${source}  --destPath ${dest}`;
+                    this._addLog("NX:imagemin compress cmd:" + cmd);
                     await child_process.execPromise(cmd);
-                    this._addLog('process end...');
+                    this._addLog('process imagemin build end...');
+                    //图片压缩tinypng
+                    this._addLog('process tinypng build start...');
+                    let cmd2 = `${Tools.imageTinyPngCompress} ${imageFolder}`;
+                    this._addLog("NX:tiny png compress cmd:" + cmd2);
+                    await child_process.execPromise(cmd2);
+                    this._addLog('process tinypng build end...');
                 },
             }
         });

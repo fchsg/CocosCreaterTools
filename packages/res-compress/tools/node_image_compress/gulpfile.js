@@ -25,7 +25,7 @@ import minimist from 'minimist';
 
 const defaultSourcePath = 'C:/Users/ej.frankzn/Desktop/source';
 const defaultDestPath = 'C:/Users/ej.frankzn/Desktop/dest';
-const imagesType = "/**/*.{png,jpeg,gif}";
+const imagesType = "/**/*.{png,jpg,jpeg,gif}";
 
 let sourceOption = {
     string: 'sourcePath',
@@ -44,7 +44,7 @@ gulp.task('clearCache', function () {
     return cache.clearAll();
 });
 
-gulp.task('compress', function () {
+gulp.task('compress-imagemin-smushit', function () {
     return gulp.src(sOptions.sourcePath + imagesType)
         .pipe(cache(imagemin({
             progressive: true,
@@ -53,6 +53,18 @@ gulp.task('compress', function () {
         .pipe(smushit({
             verbose: true
         }))
+        .pipe(gulp.dest(dOptions.destPath))
+        .on('error', function (err) {
+            gutil.log(err);
+        })
+});
+
+gulp.task('compress-imagemin', function () {
+    return gulp.src(sOptions.sourcePath + imagesType)
+        .pipe(cache(imagemin({
+            progressive: true,
+            use: [imageminOptipng()]
+        })))
         .pipe(gulp.dest(dOptions.destPath))
         .on('error', function (err) {
             gutil.log(err);
@@ -124,38 +136,14 @@ gulp.task('optipng', function (cb) {
         })
 });
 
-// gulp.task('main', gulp.series('compress', function (done) {
-//     console.log("压缩图片完成!!!")
-//     done();
-// }));
-
-// gulp.task('clear', gulp.series('clearCache', function (done) {
-//     console.log("clear完成!!!")
-//     done();
-// }));
-
-// gulp.task('smushitBuild', gulp.series('smushit', function (done) {
-//     console.log("smushitBuild完成!!!")
-//     done();
-// }));
-
-// gulp.task('optipngBuild', gulp.series('optipng', function (done) {
-//     console.log("optipngBuild完成!!!")
-//     done();
-// }));
-
-// gulp.task('optipng-smushit-Build', gulp.series('optipng', 'smushit2', function (done) {
-//     console.log("optipng-smushit-Build完成!!!")
-//     done();
-// }));
-
-// gulp.task('clearCache-optipng-smushit-Build', gulp.series('clearCache', 'optipng', 'smushit2', function (done) {
-//     console.log("optipng-smushit-Build完成!!!")
-//     done();
-// }));
-
-gulp.task('compress-build', gulp.series('clearCache', 'compress', function (done) {
-    console.log("compress-build压缩图片完成!!!");
+gulp.task('compress-imagemin-smushit-build', gulp.series('clearCache', 'compress-imagemin-smushit', function (done) {
+    console.log("compress-imagemin-smushit-build 压缩图片完成!!!");
     done();
 }));
+
+gulp.task('compress-imagemin-build', gulp.series('clearCache', 'compress-imagemin', function (done) {
+    console.log("compress-imagemin-build 压缩图片完成!!!");
+    done();
+}));
+
 

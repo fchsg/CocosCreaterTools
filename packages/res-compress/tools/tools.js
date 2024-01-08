@@ -6,13 +6,17 @@ module.exports = {
     lame: null,
     jpegtran: null,
     pngquant: null,
-    node_image_compress:null,
+    imageminSmushitCompress:null,
+    imageminCompress:null,
+    imageTinyPngCompress:null,
 
     init () {
         this.lame = this._lame();
         this.jpegtran = this._jpegtran();
         this.pngquant = this._pngquant();
-        this.node_image_compress = this._nodeImageCompress();
+        this.imageminSmushitCompress = this._imageminSmushitCompress();
+        this.imageminCompress = this._imageminCompress();
+        this.imageTinyPngCompress = this._imageTinyPngCompress();
     },
     // 设置运行权限
     setRunAuthority (file) {
@@ -68,23 +72,61 @@ module.exports = {
         }
         return this.pngquant;
     },
-    _nodeImageCompress()
+    _imageminSmushitCompress()
     {
-        if (this.node_image_compress === null) {
+        if (this.imageminSmushitCompress === null) {
             let url = null;
             if (process.platform === 'darwin')
             {
                 let toolsFolder = Path.join(this.dir, 'node_image_compress')
-                url = `cd ${toolsFolder} && node ${toolsFolder}/node_modules/gulp/bin/gulp.js compress-build`;
+                url = `cd ${toolsFolder} && node ${toolsFolder}/node_modules/gulp/bin/gulp.js compress-imagemin-smushit-build`;
                 this.setRunAuthority(url)
             }
             else
             {
                 let toolsFolder = Path.join(this.dir, 'node_image_compress')
-                url = `cd /d ${toolsFolder} && node.exe ${toolsFolder}/node_modules/gulp/bin/gulp.js compress-build`;
+                url = `cd /d ${toolsFolder} && node.exe ${toolsFolder}/node_modules/gulp/bin/gulp.js compress-imagemin-smushit-build`;
             }
-            this.node_image_compress = url;
+            this.imageminSmushitCompress = url;
         }
-        return this.node_image_compress;
-    }
+        return this.imageminSmushitCompress;
+    },
+    _imageminCompress()
+    {
+        if (this.imageminCompress === null) {
+            let url = null;
+            if (process.platform === 'darwin')
+            {
+                let toolsFolder = Path.join(this.dir, 'node_image_compress')
+                url = `cd ${toolsFolder} && node ${toolsFolder}/node_modules/gulp/bin/gulp.js compress-imagemin-build`;
+                this.setRunAuthority(url)
+            }
+            else
+            {
+                let toolsFolder = Path.join(this.dir, 'node_image_compress')
+                url = `cd /d ${toolsFolder} && node.exe ${toolsFolder}/node_modules/gulp/bin/gulp.js compress-imagemin-build`;
+            }
+            this.imageminCompress = url;
+        }
+        return this.imageminCompress;
+    },
+    _imageTinyPngCompress()
+    {
+        if (this.imageTinyPngCompress === null) {
+            let url = null;
+            if (process.platform === 'darwin')
+            {
+                let toolsFolder = Path.join(this.dir, 'tinypngjs')
+                url = `cd ${toolsFolder} && node ${toolsFolder}/main.js`;
+                this.setRunAuthority(url)
+            }
+            else
+            {
+                let toolsFolder = Path.join(this.dir, 'tinypngjs')
+                url = `cd /d ${toolsFolder} && node.exe ${toolsFolder}/main.js`;
+            }
+            this.imageTinyPngCompress = url;
+        }
+        return this.imageTinyPngCompress;
+    },
 }
