@@ -216,7 +216,13 @@ class TinyPng {
    static getFileList(path)
     {
         var filesList = [];
-        this.readFile(path, filesList);
+        let states = fs.statSync(path);
+        if (states.isFile()) {  //单个文件,直接返回
+            filesList.push(path);
+        }
+        else {
+            this.readFile(path, filesList);
+        }
         return filesList;
     }
     static readFile(path, filesList)

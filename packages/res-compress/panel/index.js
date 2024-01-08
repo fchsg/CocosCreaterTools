@@ -328,13 +328,19 @@ Editor.Panel.extend({
                 },
                 _getFileList(path) {
                     var filesList = [];
-                    this._readFile(path, filesList);
+                    let states = Fs.statSync(path);
+                    if (states.isFile()) {  //单个文件,直接返回
+                        filesList.push(path);
+                    }
+                    else {
+                        this._readFile(path, filesList);
+                    }
                     return filesList;
                 },
                 _readFile(path, filesList) {
                     let files = Fs.readdirSync(path);
                     files.forEach((file) => {
-                        states = Fs.statSync(path + "/" + file);
+                        let states = Fs.statSync(path + "/" + file);
                         if (states.isDirectory()) {
                             this._readFile(path + "/" + file, filesList);
                         } else {
@@ -447,6 +453,14 @@ Editor.Panel.extend({
                     this._addLog("NX:压缩图片文件开始");
                     this._resetSizeRecord();
                     this.ErrorCompressImageList = []
+                    if(this.compressCustomImagePath != null && this.compressCustomImagePath != "")  //手动输入路径,遍历图片
+                    {
+                        this._retrieveFiles(0);
+                    }
+                    else
+                    {
+                        this.customImageList = []
+                    }
                     if (this.customImageList && this.customImageList.length <= 0)
                     {
                         this._addLog(`NX: 没有找到图片文件`);
@@ -482,6 +496,14 @@ Editor.Panel.extend({
                 onBtnCustomAudioCompress () {
                     this._addLog("NX:压缩音频文件开始");
                     this._resetSizeRecord();
+                    if(this.compressCustomAudioPath != null && this.compressCustomAudioPath != "")  //手动输入路径,遍历文件
+                    {
+                        this._retrieveFiles(1);
+                    }
+                    else
+                    {
+                        this.customAudioList = [];
+                    }
                     if (this.customAudioList && this.customAudioList.length <= 0)
                     {
                         this._addLog(`NX:没有找到音频文件`);
@@ -544,8 +566,6 @@ Editor.Panel.extend({
                     // let path = this.imageArray[0].path;
                     // let size = this._getFileSize(path);
                     // Editor.log(`NX: path: ${path} size: ${size}`);
-
-
 
                     let imageFolder = 'D:\\github\\CocosCreaterTools\\packages\\res-compress\\tools\\tinypngjs\\image';
                     //图片压缩 imagemin build

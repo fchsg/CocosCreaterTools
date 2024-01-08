@@ -6,6 +6,9 @@ h2 {
 .greenColor{
     color: #11ff00;
 }
+.redColor{
+    color: #ff1100;
+}
 
 :host {
     display: flex;

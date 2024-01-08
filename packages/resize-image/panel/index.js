@@ -303,7 +303,7 @@ Editor.Panel.extend({
                         filters: [
                             {
                                 name: `image File`,
-                                extensions: ["png", "jpg"]
+                                extensions: ["png", "jpg", "jpeg"]
                             }
                         ],
                         properties: ['openFile'],
