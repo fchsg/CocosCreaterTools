@@ -12,7 +12,7 @@ Editor.require('packages://res-compress/panel/item/mp3item-out.js')();
 Editor.require('packages://res-compress/panel/item/image-item-out.js')();
 
 // 同步执行exec
-child_process.execPromise = function (cmd, options, callback, successCallback) {
+child_process.execPromise = function (cmd, options, callback) {
     return new Promise(function (resolve, reject) {
         child_process.exec(cmd, options, function (err, stdout, stderr) {
             // Editor.log("执行完毕!");
@@ -22,7 +22,6 @@ child_process.execPromise = function (cmd, options, callback, successCallback) {
                 reject(err);
                 return;
             }
-            successCallback && successCallback();
             resolve();
         })
     });
@@ -719,21 +718,10 @@ Editor.Panel.extend({
                       Electron.shell.beep();
                    }
                 },
-                _compressAudioOut (fileDataArray) {
-
-                    this._addLog(`_compressAudioOut${fileDataArray[0].path}`);
-
-
+                _compressAudioOut (fileDataArray) {  // 处理要压缩的音频文件
                     (async () => {
-                        // 处理要压缩的音频文件
-
-
-
                         for (let i = 0; i < fileDataArray.length; i++) {
                             let voiceFile = fileDataArray[i].path;
-
-                            this._addLog("NX:声音文件: " + voiceFile);
-
                             if (!Fs.existsSync(voiceFile)) {
                                 this._addLog("NX:声音文件不存在: " + voiceFile);
                                 return;
@@ -745,40 +733,25 @@ Editor.Panel.extend({
                                 let arr = voiceFile.split('.');
                                 let fileName = arr[0].substr(dir.length + 1, arr[0].length - dir.length);
                                 let tempMp3Path = Path.join(tempMp3Dir, 'temp_' + fileName + '.mp3');
-
-                                this._addLog("NX:tempMp3Path: " + tempMp3Path);
-
                                 // 压缩mp3
                                 let cmd = `${Tools.lame} -V 0 -q 0 -b 45 -B 80 --abr 64 "${voiceFile}" "${tempMp3Path}"`;
                                 await child_process.execPromise(cmd, null, (err) => {
                                     this._addLog("出现错误: \n" + err);
-                                    this._retrieveFiles(1);
-                                },()=>{
-                                    if(i >= fileDataArray.length - 1)
-                                    {
-                                        this._retrieveFiles(1);
-                                    }});
+                                });
                                 // 临时文件重命名
                                 let newNamePath = Path.join(tempMp3Dir, fileName + '.mp3');
                                 Fs.renameSync(tempMp3Path, newNamePath);
                                 let compressSize = this._getFileSize(newNamePath);
                                 this._recordSize(originSize, compressSize);
-
-                                this._addLog("233424234");
-
                                 this._addLog(`NX:压缩成功 [${(i + 1)}/${fileDataArray.length}] :  size: ${originSize}KB ==> ${compressSize}KB`);
                                 let fullFileName = fileName + '.mp3';
                                 this._copyFile(newNamePath, voiceFile);
-
-
-                                this._addLog("333333333333333");
-
-
                             } else {
                                 this._addLog("NX:不支持的音频文件压缩类型:" + voiceFile);
                             }
                         }
                         this._addLog(`NX:项目内所有音频压缩完成,压缩前总大小:[${this._KBToMB(this.totalOriginSize)}]MB == >压缩后总大小:[${this._KBToMB(this.totalCompressSize)}]MB`);
+                        this._retrieveFiles(1);
                     })();
                 },
                 _compressImageOut(data)
