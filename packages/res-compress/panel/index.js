@@ -565,32 +565,34 @@ Editor.Panel.extend({
                         this._addLog(`NX: 没有找到图片文件`);
                         return;
                     }
-                    (async () => {
-                        for (let i = 0; i < this.customImageList.length; i++) {
-                            let fullPath = this.customImageList[i].path;
-                            //this._addLog(`NX:图片开始压缩: ${fullPath}`);
-                            let convertPath = await this._compressImageItem(fullPath);
-                            if (convertPath) {
-                                let originSize = this._getFileSize(fullPath);
-                                let compressSize = this._getFileSize(convertPath);
-                                this._recordSize(originSize, compressSize);
-                                this._copyFile(convertPath, fullPath);
-                                this._addLog(`NX:图片压缩完成: ${fullPath} size: ${originSize}KB ==> ${compressSize}KB`);
-                            } else {
-                                this._addLog(`NX:图片压缩失败：${fullPath}`)
-                            }
-                        }
-                        if (this.ErrorCompressImageList.length > 0)
-                        {
-                            this._addLog(`NX:压缩失败图片~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
-                            for (let i = 0; i < this.ErrorCompressImageList.length; i++) {
-                                let path = this.ErrorCompressImageList[i];
-                                this._addLog(path);
-                            }
-                            this._addLog(`NX:压缩失败图片~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
-                        }
-                        this._addLog(`NX:所有图片压缩完成,压缩前总大小:[${this._KBToMB(this.totalOriginSize)}]MB == >压缩后总大小:[${this._KBToMB(this.totalCompressSize)}]MB`);
-                    })();
+                    // (async () => {
+                    //     for (let i = 0; i < this.customImageList.length; i++) {
+                    //         let fullPath = this.customImageList[i].path;
+                    //         //this._addLog(`NX:图片开始压缩: ${fullPath}`);
+                    //         let convertPath = await this._compressImageItem(fullPath);
+                    //         if (convertPath) {
+                    //             let originSize = this._getFileSize(fullPath);
+                    //             let compressSize = this._getFileSize(convertPath);
+                    //             this._recordSize(originSize, compressSize);
+                    //             this._copyFile(convertPath, fullPath);
+                    //             this._addLog(`NX:图片压缩完成: ${fullPath} size: ${originSize}KB ==> ${compressSize}KB`);
+                    //         } else {
+                    //             this._addLog(`NX:图片压缩失败：${fullPath}`)
+                    //         }
+                    //     }
+                    //     if (this.ErrorCompressImageList.length > 0)
+                    //     {
+                    //         this._addLog(`NX:压缩失败图片~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
+                    //         for (let i = 0; i < this.ErrorCompressImageList.length; i++) {
+                    //             let path = this.ErrorCompressImageList[i];
+                    //             this._addLog(path);
+                    //         }
+                    //         this._addLog(`NX:压缩失败图片~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
+                    //     }
+                    //     this._addLog(`NX:所有图片压缩完成,压缩前总大小:[${this._KBToMB(this.totalOriginSize)}]MB == >压缩后总大小:[${this._KBToMB(this.totalCompressSize)}]MB`);
+                    // })();
+
+                    this._compressImageFolderAsync(this.compressCustomImagePath);
                 },
                 onBtnCustomAudioCompress () {
                     this._addLog("NX:压缩音频文件开始");
@@ -664,28 +666,41 @@ Editor.Panel.extend({
                 {
                     this.logView = "";
                 },
-                async onTest() //测试接口
+                async _compressImageFileAsync(fileName)  //压缩单个文件
                 {
-                    //文件尺寸
-                    // let path = this.imageArray[0].path;
-                    // let size = this._getFileSize(path);
-                    // Editor.log(`NX: path: ${path} size: ${size}`);
-
-                    let imageFolder = 'D:\\github\\CocosCreaterTools\\packages\\res-compress\\tools\\tinypngjs\\image';
                     //图片压缩 imagemin build
                     this._addLog('process imagemin build start...');
-                    let source = imageFolder;
-                    let dest = imageFolder;
-                    let cmd = `${Tools.imageminCompress} --sourcePath ${source}  --destPath ${dest}`;
+                    let source = fileName;
+                    let dest = fileName;
+                    let cmd = `${Tools.imageminCompress} --sourcePath ${source}  --destPath ${dest} --imageType ""`;
                     this._addLog("NX:imagemin compress cmd:" + cmd);
                     await child_process.execPromise(cmd);
                     this._addLog('process imagemin build end...');
                     //图片压缩tiny png
                     this._addLog('process tiny png build start...');
-                    let cmd2 = `${Tools.imageTinyPngCompress} ${imageFolder}`;
+                    let cmd2 = `${Tools.imageTinyPngCompress} ${fileName}`;
                     this._addLog("NX:tiny png compress cmd:" + cmd2);
                     await child_process.execPromise(cmd2);
                     this._addLog('process tiny png build end...');
+                },
+                async _compressImageFolderAsync(folder)
+                {
+                    //图片压缩 imagemin build
+                    this._addLog('process imagemin build start...');
+                    let source = folder;
+                    let dest = folder;
+                    let imageType = "/**/*.{png,jpg,jpeg,gif}";
+                    let cmd = `${Tools.imageminCompress} --sourcePath ${source}  --destPath ${dest} --imageType ${imageType}`;
+                    //this._addLog("NX:imagemin compress cmd:" + cmd);
+                    await child_process.execPromise(cmd);
+                    this._addLog('process imagemin build end...');
+                    //图片压缩tiny png
+                    this._addLog('process tiny png build start...');
+                    let cmd2 = `${Tools.imageTinyPngCompress} ${folder}`;
+                    //this._addLog("NX:tiny png compress cmd:" + cmd2);
+                    await child_process.execPromise(cmd2);
+                    this._addLog('process tiny png build end...');
+                    this._retrieveFiles(1);
                 },
                 onBtnRefreshAudioList()
                 {
@@ -756,7 +771,14 @@ Editor.Panel.extend({
                 },
                 _compressImageOut(data)
                 {
-                    //TODO
+                    if(data && data.path && Fs.existsSync(data.path))
+                    {
+                       this._compressImageFileAsync(data.path);
+                    }
+                    else
+                    {
+                        this._addLog("NX:压缩文件不存在");
+                    }
                 },
                 _compressMp3Out(data)
                 {
@@ -769,6 +791,29 @@ Editor.Panel.extend({
                 _openMp3Out(data)
                 {
                     this._customOpenFile(data.path)
+                },
+                async onTest() //测试接口
+                {
+                    //文件尺寸
+                    // let path = this.imageArray[0].path;
+                    // let size = this._getFileSize(path);
+                    // Editor.log(`NX: path: ${path} size: ${size}`);
+
+                    let imageFolder = 'D:\\github\\CocosCreaterTools\\packages\\res-compress\\tools\\tinypngjs\\image';
+                    //图片压缩 imagemin build
+                    this._addLog('process imagemin build start...');
+                    let source = imageFolder;
+                    let dest = imageFolder;
+                    let cmd = `${Tools.imageminCompress} --sourcePath ${source}  --destPath ${dest}`;
+                    this._addLog("NX:imagemin compress cmd:" + cmd);
+                    await child_process.execPromise(cmd);
+                    this._addLog('process imagemin build end...');
+                    //图片压缩tiny png
+                    this._addLog('process tiny png build start...');
+                    let cmd2 = `${Tools.imageTinyPngCompress} ${imageFolder}`;
+                    this._addLog("NX:tiny png compress cmd:" + cmd2);
+                    await child_process.execPromise(cmd2);
+                    this._addLog('process tiny png build end...');
                 },
             }
         });

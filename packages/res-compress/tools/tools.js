@@ -97,13 +97,13 @@ module.exports = {
             let url = null;
             if (process.platform === 'darwin')
             {
-                let toolsFolder = Path.join(this.dir, 'node_image_compress')
+                let toolsFolder = Path.join(this.dir, 'node_image_compress');
                 url = `cd ${toolsFolder} && node ${toolsFolder}/node_modules/gulp/bin/gulp.js compress-imagemin-build`;
-                this.setRunAuthority(url)
+                this.setRunAuthority(url);
             }
             else
             {
-                let toolsFolder = Path.join(this.dir, 'node_image_compress')
+                let toolsFolder = Path.join(this.dir, 'node_image_compress');
                 url = `cd /d ${toolsFolder} && node.exe ${toolsFolder}/node_modules/gulp/bin/gulp.js compress-imagemin-build`;
             }
             this.imageminCompress = url;
@@ -116,13 +116,13 @@ module.exports = {
             let url = null;
             if (process.platform === 'darwin')
             {
-                let toolsFolder = Path.join(this.dir, 'tinypngjs')
+                let toolsFolder = Path.join(this.dir, 'tinypngjs');
                 url = `cd ${toolsFolder} && node ${toolsFolder}/main.js`;
                 this.setRunAuthority(url)
             }
             else
             {
-                let toolsFolder = Path.join(this.dir, 'tinypngjs')
+                let toolsFolder = Path.join(this.dir, 'tinypngjs');
                 url = `cd /d ${toolsFolder} && node.exe ${toolsFolder}/main.js`;
             }
             this.imageTinyPngCompress = url;
