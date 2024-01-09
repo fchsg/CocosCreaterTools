@@ -74,7 +74,8 @@ Editor.Panel.extend({
                 const Msg = Editor.require('packages://res-compress/panel/msg.js');
 
                 this.$root.$on(Msg.CompressImage, (data) => {  //项目内单个图片压缩按钮
-                    this._compressImage([data]);
+                    //this._compressImage([data]);
+                    this._compressImageFileAsync(data.path);
                 });
                 this.$root.$on(Msg.CompressAudio, (data) => { //项目内单个音频压缩按钮
                     this._compressMp3([data])
@@ -129,7 +130,9 @@ Editor.Panel.extend({
                     this._addLog("NX:开始压缩项目内全部图片");
                     this.ErrorCompressImageList = [];
                     this._resetSizeRecord();
-                    this._compressImage(this.imageArray);
+                    //this._compressImage(this.imageArray);
+                    let assetsFolder = this._getAssetsDir()
+                    this._compressImageFolderAsync(assetsFolder);
                 },
                 onBtnClickGetProject (event) {  // 刷新项目内的声音文件mp3类型
                     if (event) {
@@ -670,16 +673,18 @@ Editor.Panel.extend({
                 {
                     //图片压缩 imagemin build
                     this._addLog('process imagemin build start...');
+                    fileName = Path.dirname(fileName);
                     let source = fileName;
                     let dest = fileName;
-                    let cmd = `${Tools.imageminCompress} --sourcePath ${source}  --destPath ${dest} --imageType ""`;
-                    this._addLog("NX:imagemin compress cmd:" + cmd);
+                    let imageType = "/**/*.{png,jpg,jpeg,gif}";
+                    let cmd = `${Tools.imageminCompress} --sourcePath ${source}  --destPath ${dest} --imageType ${imageType}`;
+                    //this._addLog("NX:imagemin compress cmd:" + cmd);
                     await child_process.execPromise(cmd);
                     this._addLog('process imagemin build end...');
                     //图片压缩tiny png
                     this._addLog('process tiny png build start...');
                     let cmd2 = `${Tools.imageTinyPngCompress} ${fileName}`;
-                    this._addLog("NX:tiny png compress cmd:" + cmd2);
+                    //this._addLog("NX:tiny png compress cmd:" + cmd2);
                     await child_process.execPromise(cmd2);
                     this._addLog('process tiny png build end...');
                 },
