@@ -127,7 +127,7 @@ Editor.Panel.extend({
                     this._compressMp3(this.mp3Array);
                 },
                 onBtnClickCompressAllImage () {
-                    this._addLog("NX:开始压缩项目内全部图片");
+                    //this._addLog("NX:开始压缩项目内全部图片");
                     this.ErrorCompressImageList = [];
                     this._resetSizeRecord();
                     //this._compressImage(this.imageArray);
