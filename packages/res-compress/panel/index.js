@@ -8,6 +8,8 @@ const {imageminCompress} = require("../tools/tools");
 
 Editor.require('packages://res-compress/panel/item/mp3item.js')();
 Editor.require('packages://res-compress/panel/item/image-item.js')();
+Editor.require('packages://res-compress/panel/item/mp3item-out.js')();
+Editor.require('packages://res-compress/panel/item/image-item-out.js')();
 
 // 同步执行exec
 child_process.execPromise = function (cmd, options, callback) {
@@ -71,12 +73,27 @@ Editor.Panel.extend({
                 this.onBtnClickGetProject();
                 const Msg = Editor.require('packages://res-compress/panel/msg.js');
 
-                this.$root.$on(Msg.CompressImage, (data) => {
+                this.$root.$on(Msg.CompressImage, (data) => {  //项目内单个图片压缩按钮
                     this._compressImage([data]);
                 });
-                this.$root.$on(Msg.CompressAudio, (data) => {
+                this.$root.$on(Msg.CompressAudio, (data) => { //项目内单个音频压缩按钮
                     this._compressMp3([data])
                 })
+                this.$root.$on(Msg.CompressImageOut, (data) => {  //项目外单个图片压缩按钮
+
+                    Editor.log("NX:CompressImageOut Click");
+
+                    //this._compressImageOut([data]);  //TODO
+
+                });
+                this.$root.$on(Msg.CompressAudioOut, (data) => { //项目外单个音频压缩按钮
+
+                    Editor.log("NX:CompressAudioOut Click");
+
+                    //this._compressMp3Out([data]); //TODO
+
+                })
+
             },
             init () {
             },
@@ -637,11 +654,11 @@ Editor.Panel.extend({
                     await child_process.execPromise(cmd);
                     this._addLog('process imagemin build end...');
                     //图片压缩tinypng
-                    this._addLog('process tinypng build start...');
+                    this._addLog('process tiny png build start...');
                     let cmd2 = `${Tools.imageTinyPngCompress} ${imageFolder}`;
                     this._addLog("NX:tiny png compress cmd:" + cmd2);
                     await child_process.execPromise(cmd2);
-                    this._addLog('process tinypng build end...');
+                    this._addLog('process tiny png build end...');
                 },
             }
         });
