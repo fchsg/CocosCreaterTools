@@ -4,7 +4,7 @@ const Path = require('fire-path');
 const Electron = require('electron');
 const Tools = Editor.require('packages://res-compress/tools/tools.js');
 const child_process = require('child_process');
-const {imageminCompress} = require("../tools/tools");
+//const {imageminCompress} = require("../tools/tools");
 
 Editor.require('packages://res-compress/panel/item/mp3item.js')();
 Editor.require('packages://res-compress/panel/item/image-item.js')();
@@ -78,22 +78,23 @@ Editor.Panel.extend({
                 });
                 this.$root.$on(Msg.CompressAudio, (data) => { //项目内单个音频压缩按钮
                     this._compressMp3([data])
-                })
+                });
                 this.$root.$on(Msg.CompressImageOut, (data) => {  //项目外单个图片压缩按钮
-
                     Editor.log("NX:CompressImageOut Click");
-
-                    //this._compressImageOut([data]);  //TODO
-
+                    this._compressImageOut(data);
+                });
+                this.$root.$on(Msg.OpenImageOut, (data) => {  //项目外单个图片压缩按钮
+                    Editor.log("NX:OpenImageOut Click");
+                    this._openImageOut(data);
                 });
                 this.$root.$on(Msg.CompressAudioOut, (data) => { //项目外单个音频压缩按钮
-
                     Editor.log("NX:CompressAudioOut Click");
-
-                    //this._compressMp3Out([data]); //TODO
-
-                })
-
+                    this._compressMp3Out(data);
+                });
+                this.$root.$on(Msg.OpenAudioOut, (data) => { //项目外单个音频压缩按钮
+                    Editor.log("NX:OpenAudioOut Click");
+                    this._openMp3Out(data);
+                });
             },
             init () {
             },
@@ -130,8 +131,7 @@ Editor.Panel.extend({
                     this._resetSizeRecord();
                     this._compressImage(this.imageArray);
                 },
-                // 检索项目中的声音文件mp3类型
-                onBtnClickGetProject (event) {
+                onBtnClickGetProject (event) {  // 刷新项目内的声音文件mp3类型
                     if (event) {
                         event.preventDefault();
                         event.stopPropagation();
@@ -178,6 +178,12 @@ Editor.Panel.extend({
                         let numA = extA.charCodeAt(0);
                         let numB = extB.charCodeAt(0);
                         return numA - numB;
+                    })
+                },
+                _sortArrByFileSize(arr)
+                {
+                    arr.sort(function (a, b) {
+                        return  b.size - a.size;
                     })
                 },
                 async _compressImageItem (file) {
@@ -380,16 +386,29 @@ Editor.Panel.extend({
                         this.customAudioList = [];
                     }
                     let fileList =  this._getFileList(customPath);
-                    fileList.forEach(function (result) {
-                        let ext = Path.extname(result);
-                        if ( type == 1 && ext === '.mp3') {
-                            this.customAudioList.push(result);
-                            Editor.log("NX: Audio Path:" + result);
-                        } else if ( type == 0 && (ext === '.png' || ext === '.jpg')) {
-                            this.customImageList.push(result);
-                            Editor.log("NX: Image Path:" + result);
+                    for (let i = 0; i < fileList.length; i++)
+                    {
+                        let fullPath = fileList[i];
+                        let ext = Path.extname(fullPath).toLowerCase();
+                        let fileSize = this._getFileSize(fullPath);
+                        let data = {
+                            path : fullPath,
+                            size : fileSize,
+                            displaySize : `${fileSize}KB`,
                         }
-                    }.bind(this));
+                        if ( type == 1 && ext === '.mp3')
+                        {
+                            this.customAudioList.push(data);
+                            Editor.log("NX: Audio Path:" + fullPath);
+                        }
+                        else if ( type == 0 && (ext === '.png' || ext === '.jpg' || ext == 'jpeg'))
+                        {
+                            this.customImageList.push(data);
+                            Editor.log("NX: Image Path:" + fullPath);
+                        }
+                    }
+                    this._sortArrByFileSize(this.customAudioList);
+                    this._sortArrByFileSize(this.customImageList);
                 },
                 onDropCustomImageFolder (event) {
                     event.preventDefault();
@@ -545,7 +564,7 @@ Editor.Panel.extend({
                     }
                     (async () => {
                         for (let i = 0; i < this.customImageList.length; i++) {
-                            let fullPath = this.customImageList[i];
+                            let fullPath = this.customImageList[i].path;
                             //this._addLog(`NX:图片开始压缩: ${fullPath}`);
                             let convertPath = await this._compressImageItem(fullPath);
                             if (convertPath) {
@@ -589,7 +608,7 @@ Editor.Panel.extend({
                     (async () => {
                         // 处理要压缩的音频文件
                         for (let i = 0; i < this.customAudioList.length; i++) {
-                            let voiceFile = this.customAudioList[i];
+                            let voiceFile = this.customAudioList[i].path;
                             if (!Fs.existsSync(voiceFile)) {
                                 this._addLog("声音文件不存在: " + voiceFile);
                                 return;
@@ -653,12 +672,36 @@ Editor.Panel.extend({
                     this._addLog("NX:imagemin compress cmd:" + cmd);
                     await child_process.execPromise(cmd);
                     this._addLog('process imagemin build end...');
-                    //图片压缩tinypng
+                    //图片压缩tiny png
                     this._addLog('process tiny png build start...');
                     let cmd2 = `${Tools.imageTinyPngCompress} ${imageFolder}`;
                     this._addLog("NX:tiny png compress cmd:" + cmd2);
                     await child_process.execPromise(cmd2);
                     this._addLog('process tiny png build end...');
+                },
+                onBtnRefreshAudioList()
+                {
+                    Editor.log("NX: onBtnRefreshAudioList");
+                },
+                onBtnRefreshImageList()
+                {
+                    Editor.log("NX: onBtnRefreshImageList");
+                },
+                _compressImageOut(path)
+                {
+                    //TODO
+                },
+                _compressMp3Out(path)
+                {
+
+                },
+                _openImageOut(path)
+                {
+
+                },
+                _openMp3Out(path)
+                {
+
                 },
             }
         });

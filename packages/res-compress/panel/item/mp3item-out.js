@@ -9,12 +9,11 @@ module.exports = () => {
         },
         methods: {
             onBtnClickCompress () {
-                // this.data.isUse=!this.data.isUse;
-                // console.log("on use: " + this.data.isUse);
-                // console.log("压缩");
-                // console.log(this.data);
                 this.$root.$emit(Msg.CompressAudioOut, this.data);
-            }
+            },
+            onBtnClickOpen(){
+                this.$root.$emit(Msg.OpenAudioOut, this.data);
+            },
         },
         computed: {},
     });
