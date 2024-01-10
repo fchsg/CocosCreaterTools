@@ -58,6 +58,8 @@ Editor.Panel.extend({
     template: Fs.readFileSync(Editor.url('packages://res-compress/panel/index.html'), 'utf-8'),
     $: {
         logTextArea: '#logTextArea',
+        checkbox_imagemin_tinypng: '#checkbox_imagemin_tinypng',
+        checkbox_imagemin_smushit:'#checkbox_imagemin_smushit',
     },
     ready () {
         let logCtrl = this.$logTextArea;
@@ -111,6 +113,8 @@ Editor.Panel.extend({
                 totalOriginSize:0.0,
                 totalCompressSize:0.0,
                 ErrorCompressImageList:[],
+                checkbox_compress_imagemin_tinypng:this.$checkbox_imagemin_tinypng,
+                checkbox_compress_imagemin_smushit:this.$checkbox_imagemin_smushit,
             },
             methods: {
                 _addLog (str) {
@@ -551,6 +555,19 @@ Editor.Panel.extend({
                 {
                     return (size / 1024).toFixed(2);
                 },
+                _checkCompressImageType()//0 tinypng 1smushit
+                {
+                    let type = 0;
+                    if(this.checkbox_compress_imagemin_tinypng.value)
+                    {
+                        type = 0;
+                    }
+                   else if(this.checkbox_compress_imagemin_smushit.value)
+                    {
+                        type = 1;
+                    }
+                    return type;
+                },
                 onBtnCustomImageCompress () {
                     //this._addLog("NX:压缩图片文件开始");
                     this._resetSizeRecord();
@@ -568,6 +585,7 @@ Editor.Panel.extend({
                         this._addLog(`NX: 没有找到图片文件`);
                         return;
                     }
+                    this._compressImageFolderAsync(this.compressCustomImagePath);
                     // (async () => {
                     //     for (let i = 0; i < this.customImageList.length; i++) {
                     //         let fullPath = this.customImageList[i].path;
@@ -594,8 +612,6 @@ Editor.Panel.extend({
                     //     }
                     //     this._addLog(`NX:所有图片压缩完成,压缩前总大小:[${this._KBToMB(this.totalOriginSize)}]MB == >压缩后总大小:[${this._KBToMB(this.totalCompressSize)}]MB`);
                     // })();
-
-                    this._compressImageFolderAsync(this.compressCustomImagePath);
                 },
                 onBtnCustomAudioCompress () {
                     this._addLog("NX:压缩音频文件开始");
@@ -671,35 +687,68 @@ Editor.Panel.extend({
                 },
                 async _compressImageFileAsync(fileName)  //压缩单个文件
                 {
-                    //图片压缩 imagemin build
-                    this._addLog('process imagemin build start...');
-                    fileName = Path.dirname(fileName);
-                    let source = fileName;
-                    let dest = fileName;
-                    let imageType = "/**/*.{png,jpg,jpeg,gif}";
-                    let cmd = `${Tools.imageminCompress} --sourcePath ${source}  --destPath ${dest} --imageType ${imageType}`;
-                    //this._addLog("NX:imagemin compress cmd:" + cmd);
-                    await child_process.execPromise(cmd);
-                    this._addLog('process imagemin build end...');
+                    this._addLog('NX:图片压缩开始');
+                    let imageCompressType = this._checkCompressImageType();
+                    if (imageCompressType == 0)
+                    {
+                        //图片压缩 imagemin build
+                        this._addLog('process imagemin build start...');
+                        fileName = Path.dirname(fileName);
+                        let source = fileName;
+                        let dest = fileName;
+                        let imageType = "";
+                        let cmd = `${Tools.imageminCompress} --sourcePath ${source}  --destPath ${dest} --imageType ${imageType}`;
+                        //this._addLog("NX:imagemin compress cmd:" + cmd);
+                        await child_process.execPromise(cmd);
+                        this._addLog('process imagemin build end...');
+                    }
+                    else if (imageCompressType == 1)
+                    {
+                        this._addLog('process imagemin smushit build start...');
+                        let source = folder;
+                        let dest = folder;
+                        let imageType = "";
+                        let cmd = `${Tools.imageminSmushitCompress} --sourcePath ${source}  --destPath ${dest} --imageType ${imageType}`;
+                        //this._addLog("NX:imagemin smushit compress cmd:" + cmd);
+                        await child_process.execPromise(cmd);
+                        this._addLog('process imageminsmushit build end...');
+                    }
                     //图片压缩tiny png
                     this._addLog('process tiny png build start...');
                     let cmd2 = `${Tools.imageTinyPngCompress} ${fileName}`;
                     //this._addLog("NX:tiny png compress cmd:" + cmd2);
                     await child_process.execPromise(cmd2);
                     this._addLog('process tiny png build end...');
+
+                    this._addLog('NX:图片压缩结束');
                 },
                 async _compressImageFolderAsync(folder)
                 {
                     //图片压缩 imagemin build
                     this._addLog('NX:图片压缩开始');
-                    this._addLog('process imagemin build start...');
-                    let source = folder;
-                    let dest = folder;
-                    let imageType = "/**/*.{png,jpg,jpeg,gif}";
-                    let cmd = `${Tools.imageminCompress} --sourcePath ${source}  --destPath ${dest} --imageType ${imageType}`;
-                    //this._addLog("NX:imagemin compress cmd:" + cmd);
-                    await child_process.execPromise(cmd);
-                    this._addLog('process imagemin build end...');
+                    let imageCompressType = this._checkCompressImageType();
+                    if (imageCompressType == 0)
+                    {
+                        this._addLog('process imagemin build start...');
+                        let source = folder;
+                        let dest = folder;
+                        let imageType = "/**/*.{png,jpg,jpeg,gif}";
+                        let cmd = `${Tools.imageminCompress} --sourcePath ${source}  --destPath ${dest} --imageType ${imageType}`;
+                        //this._addLog("NX:imagemin compress cmd:" + cmd);
+                        await child_process.execPromise(cmd);
+                        this._addLog('process imagemin build end...');
+                    }
+                    else if (imageCompressType == 1)
+                    {
+                        this._addLog('process imagemin smushit build start...');
+                        let source = folder;
+                        let dest = folder;
+                        let imageType = "/**/*.{png,jpg,jpeg,gif}";
+                        let cmd = `${Tools.imageminSmushitCompress} --sourcePath ${source}  --destPath ${dest} --imageType ${imageType}`;
+                        //this._addLog("NX:imagemin smushit compress cmd:" + cmd);
+                        await child_process.execPromise(cmd);
+                        this._addLog('process imageminsmushit build end...');
+                    }
                     //图片压缩tiny png
                     this._addLog('process tiny png build start...');
                     let cmd2 = `${Tools.imageTinyPngCompress} ${folder}`;

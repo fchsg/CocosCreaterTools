@@ -5,22 +5,23 @@
             <div class="header greenColor">选项设置:</div>
             <ui-prop name="压缩参数设置:">
                 <div>
-                    <input type="checkbox" id="imagemin_tinypng" name="imagemin_tinypng" />
-                    <label for="imagemin_tinypng">图片压缩算法 Imagemin Tinypng</label>
+                   <ui-checkbox id="checkbox_imagemin_tinypng" title="图片压缩算法 Imagemin Tinypng" value=false></ui-checkbox>
+                    图片压缩算法 Imagemin Tinypng
                 </div>
+
                 <div>
-                    <input type="checkbox" id="imagemin_smushit" name="imagemin_smushit" />
-                    <label for="imagemin_smushit">图片压缩算法 Imagemin Smushit</label>
+                    <ui-checkbox id="checkbox_imagemin_smushit" title="图片压缩算法 Imagemin Tinypng" value=false></ui-checkbox>
+                    图片压缩算法 Imagemin Smushit
                 </div>
             </ui-prop>
             <ui-prop name="打包设置:">
                 <div>
-                    <input type="checkbox" id="auto_compress_image" name="auto_compress_image"  />
+                    <input type="checkbox" id="auto_compress_image" name="auto_compress_image" />
                     <label for="auto_compress_image">导出包时是否自动压缩图片</label>
                 </div>
                 <div>
                     <input type="checkbox" id="auto_compress_audio" name="auto_compress_audio"  />
-                    <label for="auto_compress_audio">导出包时是否自动压缩图片</label>
+                    <label for="auto_compress_audio">导出包时是否自动压缩音频</label>
                 </div>
             </ui-prop>
         </ui-section>
