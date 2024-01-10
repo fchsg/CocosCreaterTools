@@ -1,5 +1,30 @@
 <div id="view" class="scroll">
     <div class="section">
+
+        <ui-section>
+            <div class="header greenColor">选项设置:</div>
+            <ui-prop name="压缩参数设置:">
+                <div>
+                    <input type="checkbox" id="imagemin_tinypng" name="imagemin_tinypng" />
+                    <label for="imagemin_tinypng">图片压缩算法 Imagemin Tinypng</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="imagemin_smushit" name="imagemin_smushit" />
+                    <label for="imagemin_smushit">图片压缩算法 Imagemin Smushit</label>
+                </div>
+            </ui-prop>
+            <ui-prop name="打包设置:">
+                <div>
+                    <input type="checkbox" id="auto_compress_image" name="auto_compress_image"  />
+                    <label for="auto_compress_image">导出包时是否自动压缩图片</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="auto_compress_audio" name="auto_compress_audio"  />
+                    <label for="auto_compress_audio">导出包时是否自动压缩图片</label>
+                </div>
+            </ui-prop>
+        </ui-section>
+
         <ui-section>
             <div class="header greenColor">项目外音频文件压缩</div>
             <ui-prop name="请选择压缩音频文件"
