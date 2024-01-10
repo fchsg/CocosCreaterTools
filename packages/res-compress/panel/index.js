@@ -552,7 +552,7 @@ Editor.Panel.extend({
                     return (size / 1024).toFixed(2);
                 },
                 onBtnCustomImageCompress () {
-                    this._addLog("NX:压缩图片文件开始");
+                    //this._addLog("NX:压缩图片文件开始");
                     this._resetSizeRecord();
                     this.ErrorCompressImageList = [];
                     if(this.compressCustomImagePath != null && this.compressCustomImagePath != "")  //手动输入路径,遍历图片
@@ -691,6 +691,7 @@ Editor.Panel.extend({
                 async _compressImageFolderAsync(folder)
                 {
                     //图片压缩 imagemin build
+                    this._addLog('NX:图片压缩开始');
                     this._addLog('process imagemin build start...');
                     let source = folder;
                     let dest = folder;
@@ -705,7 +706,8 @@ Editor.Panel.extend({
                     //this._addLog("NX:tiny png compress cmd:" + cmd2);
                     await child_process.execPromise(cmd2);
                     this._addLog('process tiny png build end...');
-                    this._retrieveFiles(1);
+                    this._retrieveFiles(0);
+                    this._addLog('NX:图片压缩结束');
                 },
                 onBtnRefreshAudioList()
                 {

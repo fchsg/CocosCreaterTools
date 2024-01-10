@@ -8,3 +8,5 @@ nodejs版本
 node.js version >=18.18.0
 安装gulp命令行
 $ npm install -g gulp-cli
+执行命令
+gulp compress-imagemin-build
