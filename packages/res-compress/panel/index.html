@@ -5,12 +5,11 @@
             <div class="header greenColor">选项设置:</div>
             <ui-prop name="请选择图片压缩参数设置:">
                 <div>
-                    <ui-checkbox id="checkbox_imagemin_tinypng" title="[图片压缩算法 Imagemin Tinypng]" value=false v-on:change = "onCompressImageminTinypngClick"></ui-checkbox>
-                    [图片压缩算法 Imagemin Tinypng]
-                </div>
-                <div>
-                    <ui-checkbox id="checkbox_imagemin_smushit" title="[图片压缩算法 Imagemin Smushit]" value=false v-on:change = "onCompressImageminSmushitClick"></ui-checkbox>
-                    [图片压缩算法 Imagemin Smushit]
+                    <ui-select id = "ui_select_imagecompress" value="0"  v-on:confirm = "onCompressSelectClick">
+                        <option value=0>图片压缩算法 [Imagemin Tinypng]</option>
+                        <option value=1>图片压缩算法 [Imagemin Smushit]</option>
+                        <option value=2>图片压缩算法 [Imagemin Smushit Tinypng]</option>
+                    </ui-select>
                 </div>
             </ui-prop>
             <ui-prop name="打包设置:">

@@ -58,10 +58,10 @@ Editor.Panel.extend({
     template: Fs.readFileSync(Editor.url('packages://res-compress/panel/index.html'), 'utf-8'),
     $: {
         logTextArea: '#logTextArea',
-        checkbox_imagemin_tinypng: '#checkbox_imagemin_tinypng',
-        checkbox_imagemin_smushit:'#checkbox_imagemin_smushit',
         check_auto_compress_image: '#check_auto_compress_image',
         check_auto_compress_audio:'#check_auto_compress_audio',
+        ui_select_imagecompress:'#ui_select_imagecompress',
+
     },
     ready () {
         let logCtrl = this.$logTextArea;
@@ -117,12 +117,11 @@ Editor.Panel.extend({
                 totalOriginSize:0.0,
                 totalCompressSize:0.0,
                 ErrorCompressImageList:[],
-                checkbox_compress_imagemin_tinypng:this.$checkbox_imagemin_tinypng,
-                checkbox_compress_imagemin_smushit:this.$checkbox_imagemin_smushit,
                 checkbox_auto_compress_image:this.$check_auto_compress_image,
                 checkbox_auto_compress_audio:this.$check_auto_compress_audio,
+                select_imagecompress:this.$ui_select_imagecompress,
                 configObj : {
-                    compress_type : 0,   //0: imagemin + tinypng,1:image smushit
+                    compress_type : 0,   //0: imagemin  tinypng,1:image smushit , 2:image smushit  tinypng
                     build_auto_compress_audio : false,
                     build_auto_compress_image : false,
                 },
@@ -711,6 +710,36 @@ Editor.Panel.extend({
                         this._addLog("NX:图片不存在:" + fileFullPath)
                     }
                 },
+                async _compressImageminFolder(folder)
+                {
+                    this._addLog('process imagemin build start...');
+                    let source = folder;
+                    let dest = folder;
+                    let imageType = "/**/*.{png,jpg,jpeg,gif}";
+                    let cmd = `${Tools.imageminCompress} --sourcePath ${source}  --destPath ${dest} --imageType ${imageType}`;
+                    //this._addLog("NX:imagemin compress cmd:" + cmd);
+                    await child_process.execPromise(cmd);
+                    this._addLog('process imagemin build end...');
+                },
+                async _compressImageminSmushitFolder(folder)
+                {
+                    this._addLog('process imagemin smushit build start...');
+                    let source = folder;
+                    let dest = folder;
+                    let imageType = "/**/*.{png,jpg,jpeg,gif}";
+                    let cmd = `${Tools.imageminSmushitCompress} --sourcePath ${source}  --destPath ${dest} --imageType ${imageType}`;
+                    //this._addLog("NX:imagemin smushit compress cmd:" + cmd);
+                    await child_process.execPromise(cmd);
+                    this._addLog('process imageminsmushit build end...');
+                },
+                async _compressTinypngFolder(folder)
+                {
+                    this._addLog('process tiny png build start...');
+                    let cmd2 = `${Tools.imageTinyPngCompress} ${folder}`;
+                    //this._addLog("NX:tiny png compress cmd:" + cmd2);
+                    await child_process.execPromise(cmd2);
+                    this._addLog('process tiny png build end...');
+                },
                 async _compressImageFolderAsync(folder)
                 {
                     //图片压缩 imagemin build
@@ -718,31 +747,17 @@ Editor.Panel.extend({
                     let imageCompressType = this._checkCompressImageType();
                     if (imageCompressType == 0)  //imagemin tinypng compress
                     {
-                        this._addLog('process imagemin build start...');
-                        let source = folder;
-                        let dest = folder;
-                        let imageType = "/**/*.{png,jpg,jpeg,gif}";
-                        let cmd = `${Tools.imageminCompress} --sourcePath ${source}  --destPath ${dest} --imageType ${imageType}`;
-                        //this._addLog("NX:imagemin compress cmd:" + cmd);
-                        await child_process.execPromise(cmd);
-                        this._addLog('process imagemin build end...');
-
-                        this._addLog('process tiny png build start...');
-                        let cmd2 = `${Tools.imageTinyPngCompress} ${folder}`;
-                        //this._addLog("NX:tiny png compress cmd:" + cmd2);
-                        await child_process.execPromise(cmd2);
-                        this._addLog('process tiny png build end...');
+                        await this._compressImageminFolder(folder);
+                        await this._compressTinypngFolder(folder);
                     }
                     else if (imageCompressType == 1) //imagemin smushit compress
                     {
-                        this._addLog('process imagemin smushit build start...');
-                        let source = folder;
-                        let dest = folder;
-                        let imageType = "/**/*.{png,jpg,jpeg,gif}";
-                        let cmd = `${Tools.imageminSmushitCompress} --sourcePath ${source}  --destPath ${dest} --imageType ${imageType}`;
-                        //this._addLog("NX:imagemin smushit compress cmd:" + cmd);
-                        await child_process.execPromise(cmd);
-                        this._addLog('process imageminsmushit build end...');
+                        await this._compressImageminSmushitFolder(folder);
+                    }
+                    else if (imageCompressType == 2) //imagemin smushit  tinypng compress
+                    {
+                        await this._compressImageminSmushitFolder(folder);
+                        await this._compressTinypngFolder(folder);
                     }
                     //刷新显示列表
                     this._retrieveFiles(0);
@@ -863,16 +878,7 @@ Editor.Panel.extend({
                 },
                 _refreshUIState()  //刷新UI状态
                 {
-                    if(this.configObj.compress_type == 0)
-                    {
-                        this.checkbox_compress_imagemin_tinypng.value = true;
-                        this.checkbox_compress_imagemin_smushit.value = false;
-                    }
-                    else if(this.configObj.compress_type == 1)
-                    {
-                        this.checkbox_compress_imagemin_tinypng.value = false;
-                        this.checkbox_compress_imagemin_smushit.value = true;
-                    }
+                    this.select_imagecompress.value = this.configObj.compress_type;
                     this.checkbox_auto_compress_image.value = this.configObj.build_auto_compress_image;
                     this.checkbox_auto_compress_audio.value = this.configObj.build_auto_compress_audio;
                 },
@@ -908,34 +914,9 @@ Editor.Panel.extend({
                         this._addLog(`NX:读取配置失败: error: [${e}]`);
                     }
                 },
-                onCompressImageminTinypngClick()
+                onCompressSelectClick()
                 {
-                       let value = this.checkbox_compress_imagemin_tinypng.value;
-                       if(value)
-                       {
-                           this.configObj.compress_type = 0;
-                           this.checkbox_compress_imagemin_smushit.value = false;
-                       }
-                       else
-                       {
-                           this.configObj.compress_type = 1;
-                           this.checkbox_compress_imagemin_smushit.value = true;
-                       }
-                       this._saveConfig();
-                },
-                onCompressImageminSmushitClick()
-                {
-                    let value = this.checkbox_compress_imagemin_smushit.value;
-                    if(value)
-                    {
-                        this.configObj.compress_type = 1;
-                        this.checkbox_compress_imagemin_tinypng.value = false;
-                    }
-                    else
-                    {
-                        this.configObj.compress_type = 0;
-                        this.checkbox_compress_imagemin_tinypng.value = true;
-                    }
+                    this.configObj.compress_type = Number(this.select_imagecompress.value);
                     this._saveConfig();
                 },
                 onBuildAutoCompressImage()
