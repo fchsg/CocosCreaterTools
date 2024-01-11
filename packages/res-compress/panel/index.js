@@ -85,19 +85,19 @@ Editor.Panel.extend({
                     this._compressMp3([data])
                 });
                 this.$root.$on(Msg.CompressImageOut, (data) => {  //项目外单个图片压缩按钮
-                    Editor.log("NX:CompressImageOut Click");
+                    //Editor.log("NX:CompressImageOut Click");
                     this._compressImageOut(data);
                 });
                 this.$root.$on(Msg.OpenImageOut, (data) => {  //项目外单个图片压缩按钮
-                    Editor.log("NX:OpenImageOut Click");
+                    //Editor.log("NX:OpenImageOut Click");
                     this._openImageOut(data);
                 });
                 this.$root.$on(Msg.CompressAudioOut, (data) => { //项目外单个音频压缩按钮
-                    Editor.log("NX:CompressAudioOut Click");
+                    //Editor.log("NX:CompressAudioOut Click");
                     this._compressMp3Out(data);
                 });
                 this.$root.$on(Msg.OpenAudioOut, (data) => { //项目外单个音频压缩按钮
-                    Editor.log("NX:OpenAudioOut Click");
+                    //Editor.log("NX:OpenAudioOut Click");
                     this._openMp3Out(data);
                 });
                 this._readConfig();
@@ -262,7 +262,7 @@ Editor.Panel.extend({
                                 await importPromise([file], url, true, (results) => {
                                     results.forEach(function (result) {
                                         if (result.type === "texture") {
-                                            Editor.log("del: " + result.path);
+                                           // Editor.log("del: " + result.path);
                                             if (Fs.existsSync(file)) {
                                                 Fs.unlinkSync(file);// 删除临时文件
                                             }
@@ -336,7 +336,7 @@ Editor.Panel.extend({
                                             //   删除临时目录的文件
                                             // Editor.log("type: " + result.type);
                                             if (result.type === "audio-clip") {
-                                                Editor.log("del: " + result.path);
+                                                //Editor.log("del: " + result.path);
                                                 if (Fs.existsSync(newNamePath)) {
                                                     Fs.unlinkSync(newNamePath);// 删除临时文件
                                                 }
@@ -352,7 +352,7 @@ Editor.Panel.extend({
                     })();
                 },
                 onBtnCompress () {
-                    Editor.log("test");
+                    //Editor.log("test");
                     this.onBtnClickGetProject(null);
                     this.onBtnClickGetProject(null);
                 },
@@ -361,10 +361,10 @@ Editor.Panel.extend({
                     let files = event.dataTransfer.files;
                     if (files.length > 0) {
                         let file = files[0].path;
-                        Editor.log(file);
+                        //Editor.log(file);
                         this.mp3Path = file;
                     } else {
-                        Editor.log("no file");
+                       // Editor.log("no file");
                     }
                 },
                 drag (event) {
@@ -422,12 +422,12 @@ Editor.Panel.extend({
                         if ( type == 1 && ext === '.mp3')
                         {
                             this.customAudioList.push(data);
-                            Editor.log("NX: Audio Path:" + fullPath);
+                           // Editor.log("NX: Audio Path:" + fullPath);
                         }
                         else if ( type == 0 && (ext === '.png' || ext === '.jpg' || ext == 'jpeg'))
                         {
                             this.customImageList.push(data);
-                            Editor.log("NX: Image Path:" + fullPath);
+                           // Editor.log("NX: Image Path:" + fullPath);
                         }
                     }
                     this._sortArrByFileSize(this.customAudioList);
@@ -439,10 +439,10 @@ Editor.Panel.extend({
                     if (files.length > 0) {
                         let file = files[0].path;
                         this.compressCustomImagePath = file;
-                        Editor.log("NX:选择压缩图片文件夹路径: " + this.compressCustomImagePath);
+                       // Editor.log("NX:选择压缩图片文件夹路径: " + this.compressCustomImagePath);
                         this._retrieveFiles(0);
                     } else {
-                        Editor.log("NX:选择压缩图片文件夹为空");
+                     //   Editor.log("NX:选择压缩图片文件夹为空");
                     }
                 },
                 onDropCustomAudioFolder (event) {
@@ -451,10 +451,10 @@ Editor.Panel.extend({
                     if (files.length > 0) {
                         let file = files[0].path;
                         this.compressCustomAudioPath = file;
-                        Editor.log("NX:选择压缩音频文件夹路径: " + this.compressCustomAudioPath);
+                      //  Editor.log("NX:选择压缩音频文件夹路径: " + this.compressCustomAudioPath);
                         this._retrieveFiles(1);
                     } else {
-                        Editor.log("NX:选择压缩音频文件夹为空");
+                     //   Editor.log("NX:选择压缩音频文件夹为空");
                     }
                 },
                 _getRootDir()
@@ -671,7 +671,7 @@ Editor.Panel.extend({
                                 this._recordSize(originSize, compressSize);
                                 this._addLog(`压缩完成 [${(i + 1)}/${this.customAudioList.length}] ${voiceFile} size: ${originSize}KB ==> ${compressSize}KB`);
                                 this._copyFile(newNamePath, voiceFile);
-                                Editor.log("NX:音频文件压缩成功 " + newNamePath);
+                                //Editor.log("NX:音频文件压缩成功 " + newNamePath);
                             } else {
                                 Editor.log("不支持的文件类型:" + voiceFile);
                             }
@@ -929,26 +929,36 @@ Editor.Panel.extend({
                     this.configObj.build_auto_compress_audio = this.checkbox_auto_compress_audio.value;
                     this._saveConfig();
                 },
+                 onBeforeBuildFinish(buildFolder, callback)
+                {
+                    if(callback)
+                    {
+                        callback();
+                    }
+                },
         }
         });
     },
     messages: {
         'res-compress:hello' (event, target) {
-            Editor.log("NX:刷新项目内压缩文件列表");
+           // Editor.log("NX:刷新项目内压缩文件列表");
             // 检测变动的文件里面是否包含图片或是声音
-            let b = false;
-            for (let i = 0; i < target.length; i++) {
-                let ext = require('fire-path').extname(target[i].path || target[i].destPath);
-                if (ext === '.mp3' || ext === ".png" || ext === ".jpg" || ext === ".jpeg") {
-                    b = true;
-                    break;
-                }
-            }
-            if (b) {
-                plugin.onBtnClickGetProject();
-            } else {
-                // Editor.log("未发现音频文件,无需刷新:");
-            }
-        }
+            // let b = false;
+            // for (let i = 0; i < target.length; i++) {
+            //     let ext = require('fire-path').extname(target[i].path || target[i].destPath);
+            //     if (ext === '.mp3' || ext === ".png" || ext === ".jpg" || ext === ".jpeg") {
+            //         b = true;
+            //         break;
+            //     }
+            // }
+            // if (b) {
+            //     plugin.onBtnClickGetProject();
+            // } else {
+            //     // Editor.log("未发现音频文件,无需刷新:");
+            // }
+        },
+        'res-compress:compress' (buildFolder, callback) {
+               plugin.onBeforeBuildFinish(buildFolder, callback);
+        },
     }
 });
