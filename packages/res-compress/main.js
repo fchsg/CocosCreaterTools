@@ -99,7 +99,7 @@ async function CompressImageminFolder(folder)
     let imageType = "/**/*.{png,jpg,jpeg,gif}";
     let url = GetImageminCmd();
     let cmd = `${url} --sourcePath ${source}  --destPath ${dest} --imageType ${imageType}`;
-    Editor.log("NX:imagemin compress cmd:" + cmd);
+    //Editor.log("NX:imagemin compress cmd:" + cmd);
     await child_process.execPromise(cmd);
     Editor.log('NX:process imagemin build end...');
 }
@@ -112,7 +112,7 @@ async function CompressImageminSmushitFolder(folder)
     let imageType = "/**/*.{png,jpg,jpeg,gif}";
     let url = GetImageminSmushitCmd();
     let cmd = `${url} --sourcePath ${source}  --destPath ${dest} --imageType ${imageType}`;
-    Editor.log("NX:imagemin smushit compress cmd:" + cmd);
+    //Editor.log("NX:imagemin smushit compress cmd:" + cmd);
     await child_process.execPromise(cmd);
     Editor.log('NX:process imagemin smushit build end...');
 }
@@ -121,13 +121,14 @@ async function CompressTinypngFolder(folder)
     Editor.log('NX:process tiny png build start...');
     let url = GetImageTinyPngCmd();
     let cmd = `${url} ${folder}`;
-    Editor.log("NX:tiny png compress cmd:" + cmd);
+    //Editor.log("NX:tiny png compress cmd:" + cmd);
     await child_process.execPromise(cmd);
     Editor.log('NX:process tiny png build end...');
 }
 
 async function CompressImageAsync(type, folder)
 {
+    RecordLog(folder, 1);  // 1 图片log
     Editor.log("NX:Compress Image Start");
     if (type == 0)
     {
@@ -144,6 +145,7 @@ async function CompressImageAsync(type, folder)
         await CompressTinypngFolder(folder);
     }
     Editor.log("NX:Compress Image End");
+    PrintLog();
 }
 
 function GetFileList(path)
@@ -221,6 +223,7 @@ function GetLameCmd()
 
 async function CompressAudioAsync(folder)
 {
+    RecordLog(folder, 0);  //0 音频log
     Editor.log("NX:Compress Audio Start");
     let customAudioList = [];
     if(folder != null && folder != "")
@@ -256,6 +259,7 @@ async function CompressAudioAsync(folder)
         }
     }
     Editor.log("NX:Compress Audio End");
+    PrintLog();
 }
 
 function ReadConfig()
@@ -302,6 +306,51 @@ async function  BuildCompress(options, callback)
         Editor.log("NX: Process Finish");
         callback();
     }
+}
+
+let logData = []
+function RecordLog(path, type)//type 0 音频log, 1 图片log
+{
+    logData = [];
+    const files = RetrieveFiles(path);
+    for (let i = 0; i <files.length; i++) {
+        let file = files[i];
+        if (type == 0 && Fs.existsSync(file) &&  Path.extname(file) ==  ".mp3")
+        {
+            let originSize = GetFileSize(file);
+            let data =
+                {
+                    file:file,
+                    originSize:originSize
+                }
+            logData.push(data);
+        }
+        else if(type == 1 && Fs.existsSync(file) && (Path.extname(file) == ".png" || Path.extname(file) == ".jpg" || Path.extname(file) == ".jpeg" ))
+        {
+            let originSize = GetFileSize(file);
+            let data =
+                {
+                    file:file,
+                    originSize:originSize
+                }
+            logData.push(data);
+        }
+    }
+}
+
+function PrintLog()
+{
+    let originSum = 0;
+    let compressSum = 0;
+    for (let i = 0; i <logData.length; i++) {
+        let data = logData[i];
+        let originSize = data.originSize;
+        let compressSize = GetFileSize(data.file);
+        originSum += originSize;
+        compressSum += compressSize;
+        Editor.log(`NX:${data.file} [${originSize}KB ==> ${compressSize}KB]`)
+    }
+    Editor.log(`NX:Summary Origin Size: ${(originSum / 1024).toFixed(2)}MB Compress Size: ${(compressSum / 1024).toFixed(2)}MB`)
 }
 
 module.exports = {
