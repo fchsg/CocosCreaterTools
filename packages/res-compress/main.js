@@ -293,7 +293,7 @@ function ReadConfig()
 async function  BuildCompress(options, callback)
 {
     let buildFolder = options.dest;
-    Log(`Process Start `);
+    Log(`Process Resource Compress Start `);
     Log(`Build Folder: ${buildFolder}`);
     ResetLog();
     let configObj = ReadConfig();
@@ -308,7 +308,7 @@ async function  BuildCompress(options, callback)
     PrintLog();
     if (callback)
     {
-        Log("Process Finish");
+        Log("Process Resource Compress Finish");
         callback();
     }
 }
@@ -344,7 +344,8 @@ function RecordLog(path, type)//type 0 音频log, 1 图片log
             let data =
                 {
                     file:file,
-                    originSize:originSize
+                    originSize:originSize,
+                    compressSize:0
                 }
             logAudioList.push(data);
         }
@@ -361,6 +362,13 @@ function RecordLog(path, type)//type 0 音频log, 1 图片log
     }
 }
 
+function SortLogList(arr)
+{
+        arr.sort(function (a, b) {
+            return  b.compressSize - a.compressSize;
+        })
+}
+
 function PrintLog()
 {
     if(logAudioList && logAudioList.length > 0)
@@ -370,8 +378,13 @@ function PrintLog()
         let compressSum = 0;
         for (let i = 0; i <logAudioList.length; i++) {
             let data = logAudioList[i];
+            data.compressSize = Number(GetFileSize(data.file));
+        }
+        SortLogList(logAudioList);
+        for (let i = 0; i <logAudioList.length; i++) {
+            let data = logAudioList[i];
             let originSize = data.originSize;
-            let compressSize = GetFileSize(data.file);
+            let compressSize = data.compressSize;
             originSum += Number(originSize);
             compressSum += Number(compressSize);
             Log(`${data.file} [${originSize}KB ==> ${compressSize}KB]`)
@@ -386,8 +399,13 @@ function PrintLog()
         let compressSum = 0;
         for (let i = 0; i <logImageList.length; i++) {
             let data = logImageList[i];
+            data.compressSize = Number(GetFileSize(data.file));
+        }
+        SortLogList(logImageList);
+        for (let i = 0; i <logImageList.length; i++) {
+            let data = logImageList[i];
             let originSize = data.originSize;
-            let compressSize = GetFileSize(data.file);
+            let compressSize = data.compressSize;
             originSum += Number(originSize);
             compressSum += Number(compressSize);
             Log(`${data.file} [${originSize}KB ==> ${compressSize}KB]`)
