@@ -12,9 +12,8 @@ function onBeforeBuildFinish (options, callback) {  //build compre image
 child_process.execPromise = function (cmd, options, callback) {
     return new Promise(function (resolve, reject) {
         child_process.exec(cmd, options, function (err, stdout, stderr) {
-            // Editor.log("执行完毕!");
             if (err) {
-                Editor.log(err);
+                Log(err);
                 callback && callback(stderr);
                 reject(err);
                 return;
@@ -34,9 +33,8 @@ function SetRunAuthority(url)
     let cmd = `chmod u+x ${url}`;
     child_process.exec(cmd, null, (err) => {
         if (err) {
-            Editor.log(`NX: SetRunAuthority Error ${err}`);
+            Log(`SetRunAuthority Error ${err}`);
         }
-        //Editor.log("NX:添加执行权限成功");
     });
 }
 
@@ -93,43 +91,43 @@ function GetImageminSmushitCmd()
 
 async function CompressImageminFolder(folder)
 {
-    Editor.log('NX:process imagemin build start...');
+    Log('NX:process imagemin build start...');
     let source = folder;
     let dest = folder;
     let imageType = "/**/*.{png,jpg,jpeg,gif}";
     let url = GetImageminCmd();
     let cmd = `${url} --sourcePath ${source}  --destPath ${dest} --imageType ${imageType}`;
-    //Editor.log("NX:imagemin compress cmd:" + cmd);
+    //Log("imagemin compress cmd:" + cmd);
     await child_process.execPromise(cmd);
-    Editor.log('NX:process imagemin build end...');
+    Log('process imagemin build end...');
 }
 
 async function CompressImageminSmushitFolder(folder)
 {
-    Editor.log('NX:process imagemin smushit build start...');
+    Log('process imagemin smushit build start...');
     let source = folder;
     let dest = folder;
     let imageType = "/**/*.{png,jpg,jpeg,gif}";
     let url = GetImageminSmushitCmd();
     let cmd = `${url} --sourcePath ${source}  --destPath ${dest} --imageType ${imageType}`;
-    //Editor.log("NX:imagemin smushit compress cmd:" + cmd);
+    //Log("imagemin smushit compress cmd:" + cmd);
     await child_process.execPromise(cmd);
-    Editor.log('NX:process imagemin smushit build end...');
+    Log('process imagemin smushit build end...');
 }
 async function CompressTinypngFolder(folder)
 {
-    Editor.log('NX:process tiny png build start...');
+    Log('process tiny png build start...');
     let url = GetImageTinyPngCmd();
     let cmd = `${url} ${folder}`;
-    //Editor.log("NX:tiny png compress cmd:" + cmd);
+    //Log("NX:tiny png compress cmd:" + cmd);
     await child_process.execPromise(cmd);
-    Editor.log('NX:process tiny png build end...');
+    Log('process tiny png build end...');
 }
 
 async function CompressImageAsync(type, folder)
 {
-    RecordLog(folder, 1);  // 1 图片log
-    Editor.log("NX:Compress Image Start");
+    RecordLog(folder, 1);  // 记录图片log
+    Log("Compress Image Start");
     if (type == 0)
     {
         await CompressImageminFolder(folder);
@@ -144,8 +142,7 @@ async function CompressImageAsync(type, folder)
         await CompressImageminSmushitFolder(folder);
         await CompressTinypngFolder(folder);
     }
-    Editor.log("NX:Compress Image End");
-    PrintLog();
+    Log("Compress Image End");
 }
 
 function GetFileList(path)
@@ -190,10 +187,15 @@ function GetTempDir()
 
 function  CopyFile(sourcePath, destPath)
 {
-    if (Fs.existsSync(destPath)) {
-        Fs.unlinkSync(destPath);
-    }
+    DeleteFile(destPath);
     Fs.copyFileSync(sourcePath, destPath);
+}
+
+function DeleteFile(path)
+{
+    if (Fs.existsSync(path)) {
+        Fs.unlinkSync(path);
+    }
 }
 
 function GetFileSize(path)
@@ -223,8 +225,8 @@ function GetLameCmd()
 
 async function CompressAudioAsync(folder)
 {
-    RecordLog(folder, 0);  //0 音频log
-    Editor.log("NX:Compress Audio Start");
+    RecordLog(folder, 0);  //记录音频log
+    Log("Compress Audio Start");
     let customAudioList = [];
     if(folder != null && folder != "")
     {
@@ -232,7 +234,7 @@ async function CompressAudioAsync(folder)
     }
     if (customAudioList && customAudioList.length <= 0)
     {
-        Editor.log(`NX: audio is null`);
+        Log(`audio is null`);
         return;
     }
     for (let i= 0; i < customAudioList.length; i++)
@@ -248,18 +250,18 @@ async function CompressAudioAsync(folder)
             let url = GetLameCmd();
             let cmd = `${url} -V 0 -q 0 -b 45 -B 80 --abr 64 "${voiceFile}" "${tempMp3Path}"`;
             await child_process.execPromise(cmd, null, (err) => {
-                Editor.log("NX: Audio Compress Error: \n" + err);
+                Log("Audio Compress Error: \n" + err);
             });
             let newNamePath = Path.join(tempMp3Dir, fileName + '.mp3');                 // 临时文件重命名
             Fs.renameSync(tempMp3Path, newNamePath);
             let originSize = GetFileSize(voiceFile);
             let compressSize = GetFileSize(newNamePath);
-            Editor.log(`NX Audio Compress Finish [${(i + 1)}/${customAudioList.length}] ${voiceFile} size: ${originSize}KB ==> ${compressSize}KB`);
+            //Log(`Audio Compress Finish [${(i + 1)}/${customAudioList.length}] ${voiceFile} size: ${originSize}KB ==> ${compressSize}KB`);
             CopyFile(newNamePath, voiceFile);
+            DeleteFile(newNamePath);
         }
     }
-    Editor.log("NX:Compress Audio End");
-    PrintLog();
+    Log("Compress Audio End");
 }
 
 function ReadConfig()
@@ -280,10 +282,10 @@ function ReadConfig()
                 configObj = JSON.parse(content);
             }
         }
-        Editor.log(`NX:Config: ${JSON.stringify(configObj)}`);
+        Log(`Config: ${JSON.stringify(configObj)}`);
     }
     catch (e) {
-        Editor.log(`NX:Config error: [${e}]`);
+        Log(`Config error: [${e}]`);
     }
     return configObj;
 }
@@ -291,7 +293,9 @@ function ReadConfig()
 async function  BuildCompress(options, callback)
 {
     let buildFolder = options.dest;
-    Editor.log(`NX: Process Start Build Folder: ${buildFolder}`);
+    Log(`Process Start `);
+    Log(`Build Folder: ${buildFolder}`);
+    ResetLog();
     let configObj = ReadConfig();
     if (configObj.build_auto_compress_audio)
     {
@@ -301,17 +305,36 @@ async function  BuildCompress(options, callback)
     {
         await CompressImageAsync(configObj.compress_type, buildFolder);
     }
+    PrintLog();
     if (callback)
     {
-        Editor.log("NX: Process Finish");
+        Log("Process Finish");
         callback();
     }
 }
 
-let logData = []
+function GetTimeHMS()
+{
+    let date = new Date();
+    return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+}
+
+function Log(log)
+{
+    Editor.log(`[NX:${GetTimeHMS()}]${log}`);
+}
+
+let logImageList = [];
+let logAudioList = [];
+
+function ResetLog()
+{
+    logImageList = [];
+    logAudioList = [];
+}
+
 function RecordLog(path, type)//type 0 音频log, 1 图片log
 {
-    logData = [];
     const files = RetrieveFiles(path);
     for (let i = 0; i <files.length; i++) {
         let file = files[i];
@@ -323,7 +346,7 @@ function RecordLog(path, type)//type 0 音频log, 1 图片log
                     file:file,
                     originSize:originSize
                 }
-            logData.push(data);
+            logAudioList.push(data);
         }
         else if(type == 1 && Fs.existsSync(file) && (Path.extname(file) == ".png" || Path.extname(file) == ".jpg" || Path.extname(file) == ".jpeg" ))
         {
@@ -333,38 +356,55 @@ function RecordLog(path, type)//type 0 音频log, 1 图片log
                     file:file,
                     originSize:originSize
                 }
-            logData.push(data);
+            logImageList.push(data);
         }
     }
 }
 
 function PrintLog()
 {
-    let originSum = 0;
-    let compressSum = 0;
-    for (let i = 0; i <logData.length; i++) {
-        let data = logData[i];
-        let originSize = data.originSize;
-        let compressSize = GetFileSize(data.file);
-        originSum += originSize;
-        compressSum += compressSize;
-        Editor.log(`NX:${data.file} [${originSize}KB ==> ${compressSize}KB]`)
+    if(logAudioList && logAudioList.length > 0)
+    {
+        Log(`**************************Audio Compress Summaries Report Start**************************`);
+        let originSum= 0;
+        let compressSum = 0;
+        for (let i = 0; i <logAudioList.length; i++) {
+            let data = logAudioList[i];
+            let originSize = data.originSize;
+            let compressSize = GetFileSize(data.file);
+            originSum += Number(originSize);
+            compressSum += Number(compressSize);
+            Log(`${data.file} [${originSize}KB ==> ${compressSize}KB]`)
+        }
+        Log(`Audio Compress Origin Size: ${(originSum / 1024).toFixed(2)}MB Compress Size: ${(compressSum / 1024).toFixed(2)}MB`)
+        Log(`**************************Audio Compress Summaries Report End**************************`);
     }
-    Editor.log(`NX:Summary Origin Size: ${(originSum / 1024).toFixed(2)}MB Compress Size: ${(compressSum / 1024).toFixed(2)}MB`)
+    if(logImageList && logImageList.length > 0)
+    {
+        Log(`**************************Image Compress Summaries Report Start**************************`);
+        let originSum = 0;
+        let compressSum = 0;
+        for (let i = 0; i <logImageList.length; i++) {
+            let data = logImageList[i];
+            let originSize = data.originSize;
+            let compressSize = GetFileSize(data.file);
+            originSum += Number(originSize);
+            compressSum += Number(compressSize);
+            Log(`${data.file} [${originSize}KB ==> ${compressSize}KB]`)
+        }
+        Log(`Image Compress Origin Size: ${(originSum / 1024).toFixed(2)}MB Compress Size: ${(compressSum / 1024).toFixed(2)}MB`)
+        Log(`**************************Image Compress Summaries Report End**************************`);
+    }
 }
 
 module.exports = {
     load () {
         Editor.Builder.on('before-change-files', onBeforeBuildFinish);
-        let date = new Date();
-        let timestamp = date.toLocaleString();
-        Editor.log(`NX: [${timestamp}]:build_process load`);
+        Log(`build_process load`);
     },
     unload () {
         Editor.Builder.removeListener('before-change-files', onBeforeBuildFinish);
-        let date = new Date();
-        let timestamp = date.toLocaleString();
-        Editor.log(`NX: [${timestamp}]:build_process unload`);
+        Log(`build_process unload`);
     },
     messages: {
         'open' () {
@@ -372,17 +412,17 @@ module.exports = {
         },
         // 文件移动
         'asset-db:assets-moved': function (event, target) {
-            //Editor.log('[Mp3Compress] 文件移动,刷新列表!');
+            //Log('[Mp3Compress] 文件移动,刷新列表!');
          //   Editor.Ipc.sendToPanel('res-compress', 'res-compress:hello', target);
         },
         // 文件删除
         'asset-db:assets-deleted': function (event, target) {
-            //Editor.log('[Mp3Compress] 文件删除,刷新列表!');
+            //Log('[Mp3Compress] 文件删除,刷新列表!');
             //Editor.Ipc.sendToPanel('res-compress', 'res-compress:hello', target);
         },
         // 文件创建
         'asset-db:assets-created': function (event, target) {
-            //Editor.log('[Mp3Compress] 文件创建,刷新列表!');
+            //Log('[Mp3Compress] 文件创建,刷新列表!');
            // Editor.Ipc.sendToPanel('res-compress', 'res-compress:hello', target);
         },
     },
