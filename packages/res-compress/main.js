@@ -355,7 +355,8 @@ function RecordLog(path, type)//type 0 音频log, 1 图片log
             let data =
                 {
                     file:file,
-                    originSize:originSize
+                    originSize:originSize,
+                    compressSize:0
                 }
             logImageList.push(data);
         }
