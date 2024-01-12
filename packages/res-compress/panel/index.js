@@ -12,7 +12,7 @@ Editor.require('packages://res-compress/panel/item/mp3item-out.js')();
 Editor.require('packages://res-compress/panel/item/image-item-out.js')();
 
 // 同步执行exec
-child_process.execPromise = function (cmd, options, callback) {
+child_process.execPromise = function (cmd, options, callback, callbackSuccess) {
     return new Promise(function (resolve, reject) {
         child_process.exec(cmd, options, function (err, stdout, stderr) {
             // Editor.log("执行完毕!");
@@ -22,6 +22,7 @@ child_process.execPromise = function (cmd, options, callback) {
                 reject(err);
                 return;
             }
+            callbackSuccess && callbackSuccess(stdout);
             resolve();
         })
     });
@@ -100,6 +101,7 @@ Editor.Panel.extend({
                     //Editor.log("NX:OpenAudioOut Click");
                     this._openMp3Out(data);
                 });
+                this._readNodeVersion();
                 this._readConfig();
                 this._refreshUIState();
             },
@@ -287,10 +289,7 @@ Editor.Panel.extend({
                 },
 
                 _getTempDir () {
-                    let userPath = Electron.remote.app.getPath('userData');
-                    let tempMp3Dir = Path.join(userPath, "/mp3Compress");
-                    FsExtra.ensureDirSync(tempMp3Dir)
-                    return tempMp3Dir;
+                    return this._getProjectTempFolder();
                 },
                 _getProjectTempFolder()
                 {
@@ -333,13 +332,8 @@ Editor.Panel.extend({
                                 await importPromise([newNamePath], url, true,
                                     function (results) {
                                         results.forEach(function (result) {
-                                            //   删除临时目录的文件
-                                            // Editor.log("type: " + result.type);
                                             if (result.type === "audio-clip") {
-                                                //Editor.log("del: " + result.path);
-                                                if (Fs.existsSync(newNamePath)) {
-                                                    Fs.unlinkSync(newNamePath);// 删除临时文件
-                                                }
+                                               this._deleteFile(newNamePath);   // 删除临时目录的文件
                                             }
                                         });
                                     }.bind(this));
@@ -671,6 +665,7 @@ Editor.Panel.extend({
                                 this._recordSize(originSize, compressSize);
                                 this._addLog(`压缩完成 [${(i + 1)}/${this.customAudioList.length}] ${voiceFile} size: ${originSize}KB ==> ${compressSize}KB`);
                                 this._copyFile(newNamePath, voiceFile);
+                                this._deleteFile(newNamePath);
                                 //Editor.log("NX:音频文件压缩成功 " + newNamePath);
                             } else {
                                 Editor.log("不支持的文件类型:" + voiceFile);
@@ -678,6 +673,12 @@ Editor.Panel.extend({
                         }
                         this._addLog(`NX:所有音频压缩完成,压缩前总大小:[${this._KBToMB(this.totalOriginSize)}]MB == >压缩后总大小:[${this._KBToMB(this.totalCompressSize)}]MB`);
                     })();
+                },
+                _deleteFile(path)
+                {
+                    if (Fs.existsSync(path)) {
+                        Fs.unlinkSync(path);
+                    }
                 },
                 _getFileSize(path)
                 {
@@ -822,6 +823,7 @@ Editor.Panel.extend({
                                 this._addLog(`NX:压缩成功 [${(i + 1)}/${fileDataArray.length}] :  size: ${originSize}KB ==> ${compressSize}KB`);
                                 let fullFileName = fileName + '.mp3';
                                 this._copyFile(newNamePath, voiceFile);
+                                this._deleteFile(newNamePath);
                             } else {
                                 this._addLog("NX:不支持的音频文件压缩类型:" + voiceFile);
                             }
@@ -912,6 +914,26 @@ Editor.Panel.extend({
                     }
                     catch (e) {
                         this._addLog(`NX:读取配置失败: error: [${e}]`);
+                    }
+                },
+                async _readNodeVersion()
+                {
+                    try
+                    {
+                        await child_process.execPromise(Tools.nodeVersion, null, null,(stdout) => {
+                            let nodeVersion = stdout.replace('v', '');
+                            nodeVersion = nodeVersion.split(".")
+                            nodeVersion = Number(nodeVersion[0]);
+                            this._addLog(`NX: local environment node js version:${stdout}`);
+                            if(nodeVersion < 18)
+                            {
+                                this._addLog(`NX:本地Node JS 版本需要安装18.18.0以上版本,请安装正确版本后使用资源压缩工具`);
+                            }
+                        });
+                    }
+                    catch (e)
+                    {
+                        this._addLog(`NX: crash node js: ${e}`);
                     }
                 },
                 onCompressSelectClick()

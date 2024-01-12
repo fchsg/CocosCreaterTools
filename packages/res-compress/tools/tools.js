@@ -9,6 +9,7 @@ module.exports = {
     imageminSmushitCompress:null,
     imageminCompress:null,
     imageTinyPngCompress:null,
+    nodeVersion:null,
 
     init () {
         this.lame = this._lame();
@@ -17,6 +18,7 @@ module.exports = {
         this.imageminSmushitCompress = this._imageminSmushitCompress();
         this.imageminCompress = this._imageminCompress();
         this.imageTinyPngCompress = this._imageTinyPngCompress();
+        this.nodeVersion = this._nodeVersion();
     },
     // 设置运行权限
     setRunAuthority (file) {
@@ -128,5 +130,22 @@ module.exports = {
             this.imageTinyPngCompress = url;
         }
         return this.imageTinyPngCompress;
+    },
+    _nodeVersion()
+    {
+        if (this.nodeVersion === null) {
+            let url = null;
+            if (process.platform === 'darwin')
+            {
+                url = `node -v`;
+                this.setRunAuthority(url)
+            }
+            else
+            {
+                url = `node.exe -v`;
+            }
+            this.nodeVersion = url;
+        }
+        return this.nodeVersion;
     },
 }
