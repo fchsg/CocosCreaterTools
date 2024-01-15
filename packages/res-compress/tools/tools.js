@@ -10,6 +10,7 @@ module.exports = {
     imageminCompress:null,
     imageTinyPngCompress:null,
     nodeVersion:null,
+    stripLog:null,
 
     init () {
         this.lame = this._lame();
@@ -19,6 +20,7 @@ module.exports = {
         this.imageminCompress = this._imageminCompress();
         this.imageTinyPngCompress = this._imageTinyPngCompress();
         this.nodeVersion = this._nodeVersion();
+        this.stripLog = this._stripLog();
     },
     // 设置运行权限
     setRunAuthority (file) {
@@ -148,4 +150,23 @@ module.exports = {
         }
         return this.nodeVersion;
     },
+    _stripLog()
+    {
+        if (this.stripLog === null) {
+            let url = null;
+            if (process.platform === 'darwin')
+            {
+                let toolsFolder = Path.join(this.dir, 'node_strip_debug');
+                url = `cd ${toolsFolder} && node ${toolsFolder}/node_modules/gulp/bin/gulp.js  strip-js-build`;
+                this.setRunAuthority(url);
+            }
+            else
+            {
+                let toolsFolder = Path.join(this.dir, 'node_strip_debug');
+                url = `cd /d ${toolsFolder} && node.exe ${toolsFolder}/node_modules/gulp/bin/gulp.js  strip-js-build`;
+            }
+            this.stripLog = url;
+        }
+        return this.stripLog;
+    }
 }

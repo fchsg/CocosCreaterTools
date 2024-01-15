@@ -270,6 +270,7 @@ function ReadConfig()
         compress_type : 0,   //0: imagemin  tinypng,1:image smushit , 2:image smushit  tinypng
         build_auto_compress_audio : false,
         build_auto_compress_image : false,
+        build_auto_strip_log : false,
     }
     try
     {
@@ -290,6 +291,69 @@ function ReadConfig()
     return configObj;
 }
 
+function GetAllScriptFiles (folder) {
+
+    let fileList = []
+    let allFileList =  GetFileList(folder);
+    for (let i = 0; i < allFileList.length; i++) {
+        let fullPath = allFileList[i];
+        let ext = Path.extname(fullPath).toLowerCase();
+        if (ext == '.js') {
+            fileList.push(fullPath);
+        }
+    }
+    return fileList;
+}
+function GetStripLogTempLog()
+{
+    let projectPath = Editor.Project.path;
+    let temp = Path.join(projectPath, "/packages/res-compress/tools/node_strip_debug/strip_log_temp");
+    FsExtra.ensureDirSync(temp)
+    return temp
+}
+
+function  GetStripLogCmd()
+{
+    let resCompressDir = GetResCompressFolder();
+    let toolsFolder = Path.join(resCompressDir, 'tools/node_strip_debug');
+    let cmd = '';
+    if (process.platform === 'darwin')
+    {
+        cmd = `cd ${toolsFolder} && node ${toolsFolder}/node_modules/gulp/bin/gulp.js  strip-js-build`;
+        SetRunAuthority(cmd);
+    }
+    else
+    {
+        cmd = `cd /d ${toolsFolder} && node.exe ${toolsFolder}/node_modules/gulp/bin/gulp.js  strip-js-build`;
+    }
+    return cmd;
+}
+
+async function StripLogAsync(folder)
+{
+    let fileList = GetAllScriptFiles(folder);
+    for (let i = 0; i < fileList.length; i++)
+    {
+        let fileFullPath = fileList[i];
+        Log(`strip log start ${fileFullPath}`);
+        let fileName = Path.basename(fileFullPath);
+        let tempFolder = GetStripLogTempLog();
+        let inFolder = Path.join(tempFolder, 'in');
+        FsExtra.ensureDirSync(inFolder);
+        let outFolder = Path.join(tempFolder, 'out');
+        FsExtra.ensureDirSync(outFolder);
+        let inFullPath = Path.join(inFolder, fileName);
+        let outFullPath = Path.join(outFolder, fileName);
+        CopyFile(fileFullPath, inFullPath);
+        let cmd = `${GetStripLogCmd()} --fileName ${fileName}` ;
+        //Log(`cmd: ${cmd}`);
+        await child_process.execPromise(cmd);
+        CopyFile(outFullPath,fileFullPath);
+        DeleteFile(inFullPath);
+        DeleteFile(outFullPath);
+       Log(`strip log end`);
+    }
+}
 async function  BuildCompress(options, callback)
 {
     let buildFolder = options.dest;
@@ -304,6 +368,11 @@ async function  BuildCompress(options, callback)
     if (configObj.build_auto_compress_image)
     {
         await CompressImageAsync(configObj.compress_type, buildFolder);
+    }
+    if(configObj.build_auto_strip_log)
+    {
+        let stripLogFolder = Path.join(buildFolder, 'assets');
+        await StripLogAsync(stripLogFolder);
     }
     PrintLog();
     if (callback)

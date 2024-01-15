@@ -107,10 +107,10 @@ Editor.Panel.extend({
                 this.$root.$on(Msg.OpenAudioOut, (data) => { //项目外单个音频打开按钮
                     this._openMp3Out(data);
                 });
-                this.$root.$on(Msg.OpenStripLog, (data) => {
+                this.$root.$on(Msg.OpenStripLog, (data) => {  //去除全部文件log
                     this._openStripLog(data);
                 });
-                this.$root.$on(Msg.ExecuteStripLog, (data) => {
+                this.$root.$on(Msg.ExecuteStripLog, (data) => { //去除单个文件log
                     this._executeStripLog(data);
                 });
 
@@ -143,7 +143,7 @@ Editor.Panel.extend({
                     compress_type : 0,   //0: imagemin  tinypng,1:image smushit , 2:image smushit  tinypng
                     build_auto_compress_audio : false,
                     build_auto_compress_image : false,
-                    build_strip_log : false,
+                    build_auto_strip_log : false,
                 },
                 logImageList:[],
             },
@@ -692,7 +692,7 @@ Editor.Panel.extend({
                         await this._compressImageFolderAsync(tempFolder);
                         this._copyFile(tempFullPath,fileFullPath);
                         this._PrintLog();
-                       this._deleteFile(tempFullPath);
+                        this._deleteFile(tempFullPath);
                     }
                     else {
                         this._addLog("NX:图片不存在:" + fileFullPath)
@@ -859,7 +859,7 @@ Editor.Panel.extend({
                     this.select_imagecompress.value = this.configObj.compress_type;
                     this.checkbox_auto_compress_image.value = this.configObj.build_auto_compress_image;
                     this.checkbox_auto_compress_audio.value = this.configObj.build_auto_compress_audio;
-                    this.checkbox_check_auto_strip_log.value = this.configObj.build_strip_log;
+                    this.checkbox_check_auto_strip_log.value = this.configObj.build_auto_strip_log;
                 },
                 _getLocalConfigPath()
                 {
@@ -930,7 +930,7 @@ Editor.Panel.extend({
                 },
                 onBuildStripLog()
                 {
-                    this.configObj.build_strip_log = this.checkbox_check_auto_strip_log.value;
+                    this.configObj.build_auto_strip_log = this.checkbox_check_auto_strip_log.value;
                     this._saveConfig();
                 },
                  onBeforeBuildFinish(buildFolder, callback)
@@ -1074,19 +1074,52 @@ Editor.Panel.extend({
                         this._addLog(this.stripLogList[i].path);
                     }
                 },
-                onBtnStripLogAll()
+                async onBtnStripLogAll()//去除全部log
                 {
-                    // this.stripLogList
-                    this._addLog("TODO onBtnStripLogAll");
+                    for (let i = 0; i < this.stripLogList.length; i++)
+                    {
+                        let path = this.stripLogList[i].path;
+                        await this._stripLogAsync(path);
+                    }
                 },
                 _openStripLog(data)
                 {
                     this._customOpenFile(data.path)
                 },
-                _executeStripLog(data)
+                _getStripLogTempLog()
                 {
-                    this._addLog("TODO _executeStripLog " + data.path);
-                }
+                    let projectPath = Editor.Project.path;
+                    let temp = Path.join(projectPath, "/packages/res-compress/tools/node_strip_debug/strip_log_temp");
+                    FsExtra.ensureDirSync(temp)
+                    return temp
+                },
+                _executeStripLog(data)//去除单个文件log
+                {
+                     this._stripLogAsync(data.path);
+                },
+                async _stripLogAsync(fileFullPath)
+                {
+                    if(Fs.existsSync(fileFullPath))
+                    {
+                        this._addLog(`NX: strip log start ${fileFullPath}`);
+                        let fileName = Path.basename(fileFullPath);
+                        let tempFolder = this._getStripLogTempLog();
+                        let inFolder = Path.join(tempFolder, 'in');
+                        FsExtra.ensureDirSync(inFolder);
+                        let outFolder = Path.join(tempFolder, 'out');
+                        FsExtra.ensureDirSync(outFolder);
+                        let inFullPath = Path.join(inFolder, fileName);
+                        let outFullPath = Path.join(outFolder, fileName);
+                        this._copyFile(fileFullPath, inFullPath);
+                        let cmd = `${Tools.stripLog} --fileName ${fileName}` ;
+                        //this._addLog(`NX: cmd: ${cmd}`);
+                        await child_process.execPromise(cmd);
+                        this._copyFile(outFullPath,fileFullPath);
+                        this._deleteFile(inFullPath);
+                        this._deleteFile(outFullPath);
+                        this._addLog(`NX: strip log end`);
+                    }
+                },
         }
         });
     },
