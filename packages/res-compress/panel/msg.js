@@ -5,4 +5,6 @@ module.exports = {
     OpenImageOut:'OpenImageOut',
     CompressAudioOut:'CompressAudioOut',
     OpenAudioOut:'OpenAudioOut',
+    OpenStripLog:'OpenStripLog',
+    ExecuteStripLog:'ExecuteStripLog',
 }

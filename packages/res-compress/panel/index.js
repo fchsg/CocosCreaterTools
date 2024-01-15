@@ -10,6 +10,7 @@ Editor.require('packages://res-compress/panel/item/mp3item.js')();
 Editor.require('packages://res-compress/panel/item/image-item.js')();
 Editor.require('packages://res-compress/panel/item/mp3item-out.js')();
 Editor.require('packages://res-compress/panel/item/image-item-out.js')();
+Editor.require('packages://res-compress/panel/item/strip-log-item.js')();
 
 // 同步执行exec
 child_process.execPromise = function (cmd, options, callback, callbackSuccess) {
@@ -61,6 +62,7 @@ Editor.Panel.extend({
         logTextArea: '#logTextArea',
         check_auto_compress_image: '#check_auto_compress_image',
         check_auto_compress_audio:'#check_auto_compress_audio',
+        check_auto_strip_log:'#check_auto_strip_log',
         ui_select_imagecompress:'#ui_select_imagecompress',
 
     },
@@ -105,6 +107,14 @@ Editor.Panel.extend({
                 this.$root.$on(Msg.OpenAudioOut, (data) => { //项目外单个音频打开按钮
                     this._openMp3Out(data);
                 });
+                this.$root.$on(Msg.OpenStripLog, (data) => {
+                    this._openStripLog(data);
+                });
+                this.$root.$on(Msg.ExecuteStripLog, (data) => {
+                    this._executeStripLog(data);
+                });
+
+
                 this._readNodeVersion();
                 this._readConfig();
                 this._refreshUIState();
@@ -118,18 +128,22 @@ Editor.Panel.extend({
                 imageArray: [],
                 compressCustomImagePath:null,
                 compressCustomAudioPath:null,
+                stripLogPath:null,
                 customAudioList: [],
                 customImageList: [],
+                stripLogList:[],
                 totalOriginSize:0.0,
                 totalCompressSize:0.0,
                 ErrorCompressImageList:[],
                 checkbox_auto_compress_image:this.$check_auto_compress_image,
                 checkbox_auto_compress_audio:this.$check_auto_compress_audio,
+                checkbox_check_auto_strip_log:this.$check_auto_strip_log,
                 select_imagecompress:this.$ui_select_imagecompress,
                 configObj : {
                     compress_type : 0,   //0: imagemin  tinypng,1:image smushit , 2:image smushit  tinypng
                     build_auto_compress_audio : false,
                     build_auto_compress_image : false,
+                    build_strip_log : false,
                 },
                 logImageList:[],
             },
@@ -845,6 +859,7 @@ Editor.Panel.extend({
                     this.select_imagecompress.value = this.configObj.compress_type;
                     this.checkbox_auto_compress_image.value = this.configObj.build_auto_compress_image;
                     this.checkbox_auto_compress_audio.value = this.configObj.build_auto_compress_audio;
+                    this.checkbox_check_auto_strip_log.value = this.configObj.build_strip_log;
                 },
                 _getLocalConfigPath()
                 {
@@ -913,6 +928,11 @@ Editor.Panel.extend({
                     this.configObj.build_auto_compress_audio = this.checkbox_auto_compress_audio.value;
                     this._saveConfig();
                 },
+                onBuildStripLog()
+                {
+                    this.configObj.build_strip_log = this.checkbox_check_auto_strip_log.value;
+                    this._saveConfig();
+                },
                  onBeforeBuildFinish(buildFolder, callback)
                 {
                     if(callback)
@@ -943,7 +963,6 @@ Editor.Panel.extend({
                         }
                     }
                 },
-
                 _SortLogList(arr)
                 {
                     arr.sort(function (a, b) {
@@ -979,6 +998,95 @@ Editor.Panel.extend({
                         }
                     }
                 },
+                onDropStripLogFolder (event) {
+                    event.preventDefault();
+                    let files = event.dataTransfer.files;
+                    if (files.length > 0) {
+                        let file = files[0].path;
+                        this.stripLogPath = file;
+                        this._FindStripLogFile();
+                    } else {
+                    }
+                },
+                _FindStripLogFile () {
+                    let customPath =  this.stripLogPath;
+                    if (customPath != null && customPath != "")
+                    {
+                        this.stripLogList = [];
+                        let fileList =  this._getFileList(customPath);
+                        for (let i = 0; i < fileList.length; i++)
+                        {
+                            let fullPath = fileList[i];
+                            let ext = Path.extname(fullPath).toLowerCase();
+                            let fileSize = this._getFileSize(fullPath);
+                            let data = {
+                                path : fullPath,
+                                size : fileSize,
+                                displaySize : `${fileSize}KB`,
+                            }
+                            if ( ext === '.js')
+                            {
+                                this.stripLogList.push(data);
+                            }
+                        }
+                        this._sortArrByFileSize(this.stripLogList);
+                    }
+                },
+                onBtnOpenStripLogFolder() {
+                    let defaultFolder = this._getOpenDefaultFolder();
+                    let res = Editor.Dialog.openFile({
+                        title: "选择去除LOG的目录或文件",
+                        defaultPath: defaultFolder,
+                        properties: ['openDirectory'],
+                    });
+                    if (res !== -1) {
+                        let dir = res[0];
+                        this.stripLogPath = dir;
+                        this._FindStripLogFile();
+                    }
+                    else
+                    {
+                        this._addLog("NX:打开目录为空: ");
+                    }
+                },
+                onBtnOpenStripLogFile() {
+                    let defaultFolder = this._getOpenDefaultFolder();
+                    let res = Editor.Dialog.openFile({
+                        title: "选择去除LOG的目录或文件",
+                        defaultPath: defaultFolder,
+                        properties: ['openFile'],
+                    });
+                    if (res !== -1) {
+                        let dir = res[0];
+                        this.stripLogPath = dir;
+                        this._FindStripLogFile();
+                    }
+                    else
+                    {
+                        this._addLog("NX:打开目录为空: ");
+                    }
+                },
+                onBtnRefreshStripLogList()
+                {
+                    this._FindStripLogFile();
+                    for (let i = 0; i < this.stripLogList.length; i++)
+                    {
+                        this._addLog(this.stripLogList[i].path);
+                    }
+                },
+                onBtnStripLogAll()
+                {
+                    // this.stripLogList
+                    this._addLog("TODO onBtnStripLogAll");
+                },
+                _openStripLog(data)
+                {
+                    this._customOpenFile(data.path)
+                },
+                _executeStripLog(data)
+                {
+                    this._addLog("TODO _executeStripLog " + data.path);
+                }
         }
         });
     },

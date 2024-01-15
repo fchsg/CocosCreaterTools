@@ -9,6 +9,12 @@ h2 {
 .redColor{
     color: #ff1100;
 }
+.yellowColor{
+    color: #ffff00;
+}
+.orangeColor{
+    color: #fa8c35
+}
 
 :host {
     display: flex;

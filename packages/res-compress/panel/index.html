@@ -2,7 +2,7 @@
     <div class="section">
 
         <ui-section>
-            <div class="header greenColor">选项设置:</div>
+            <div class="header orangeColor">选项设置:</div>
             <ui-prop name="请选择图片压缩参数设置:">
                 <div>
                     <ui-select id = "ui_select_imagecompress" value="0"  v-on:confirm = "onCompressSelectClick">
@@ -21,7 +21,40 @@
                     <ui-checkbox id="check_auto_compress_audio" title="[导出包时是否自动压缩音频]" value=false" v-on:change = "onBuildAutoCompressAudio"></ui-checkbox>
                     [导出包时是否自动压缩音频]
                 </div>
+                <div>
+                    <ui-checkbox id="check_auto_strip_log" title="[导出包时是否自动去除LOG]" value=false" v-on:change = "onBuildStripLog"></ui-checkbox>
+                    [导出包时是否自动去除LOG]
+                </div>
             </ui-prop>
+        </ui-section>
+
+        <ui-section>
+            <div class="header yellowColor">导出包去除脚本LOG</div>
+            <ui-prop name="请选择去除LOG的文件或目录"
+                     v-on:drop="onDropStripLogFolder"
+                     v-on:dragover="drag"
+                     v-on:dragenter="drag"
+                     v-on:dragleave="drag">
+                <ui-input v-value="stripLogPath" class="flex-1"
+                          placeholder="拖拽文件夹,文件或输入路径到这里">
+                </ui-input>
+                <ui-button   v-on:confirm="onBtnOpenStripLogFolder">打开文件夹</ui-button>
+                <ui-button   v-on:confirm="onBtnOpenStripLogFile">打开文件</ui-button>
+                <ui-button   v-on:confirm="onBtnRefreshStripLogList">刷新列表</ui-button>
+                <ui-button   v-on:confirm="onBtnStripLogAll">去除全部</ui-button>
+            </ui-prop>
+            <div class="wrapper center layout horizontal">
+                <div class="box flex-1"> 序号</div>
+                <div class="box flex-3"> 文件</div>
+                <div class="box flex-1"> 打开</div>
+                <div class="box flex-1"> 去除LOG</div>
+            </div>
+            <div>
+                <strip-log-item track-by="$index" v-for="(index,item) in stripLogList"
+                                v-bind:data="item"
+                                v-bind:index="index">
+                </strip-log-item>
+            </div>
         </ui-section>
 
         <ui-section>
