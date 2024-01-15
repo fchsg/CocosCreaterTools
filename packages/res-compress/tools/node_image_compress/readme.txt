@@ -8,6 +8,8 @@ nodejs版本
 node.js version >=18.18.0
 安装gulp命令行
 $ npm install -g gulp-cli
+package中需要包含字段
+  "type": "module"
 测试命令
 win
 cd .\packages\res-compress\tools\node_image_compress
