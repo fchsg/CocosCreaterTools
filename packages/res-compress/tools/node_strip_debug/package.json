@@ -1,0 +1,11 @@
+{
+  "name": "node_strip_debug",
+  "version": "1.0.0",
+  "type": "module",
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-cli": "^2.3.0",
+    "gulp-strip-debug": "^6.0.0",
+    "minimist": "^1.2.8"
+  }
+}
