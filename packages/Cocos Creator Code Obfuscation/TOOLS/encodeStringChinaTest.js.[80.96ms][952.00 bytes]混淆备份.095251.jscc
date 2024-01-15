@@ -1,0 +1,22 @@
+/*
+ * @FilePath: encodeStringChinaTest.js
+ * @Author: koroFileHeader xx
+ * @Date: 2023-05-29 18:21:02
+ * @LastEditors: fileheader
+ * @LastEditTime: 2023-05-29 18:26:13
+ * @Copyright: [版权] 2023  Creator CO.LTD. All Rights Reserved.
+ * @Descripttion: 
+ */
+var cocos_parm1 = "测试 混淆 Cocos Creator";
+const cocos_parm2 = "测试 混淆 Cocos Creator";
+let cocos_parm3 = "测试 混淆 Cocos Creator";
+function cocosRunLog(cINput1, cINput2, cINput3) {
+    cocos_parm1 += cINput1;
+    cocos_parm3 += cINput3;
+    var cocos_parm4 = Math.floor(Math.random() * new Date().getTime()) + cocos_parm1 + cINput2 + cocos_parm2;
+    return console.log("Cocos Creator 最终输入值转换为=>>>>", cocos_parm4);
+};
+// 简单日志输出
+for (var ii = 0; ii < Math.floor(Math.random() * 23); ii++) {
+    cocosRunLog(Math.random() * 2022, Math.random() * 2023, Math.random() * 2033);
+};

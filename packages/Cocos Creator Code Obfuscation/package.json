@@ -1,0 +1,111 @@
+{
+  "name": "cc-obfuscated-3_x",
+  "version": "2.0.18",
+  "description": "i18n:cc-obfuscated-3_x.description",
+  "author": "cocos creator ✍",
+  "main": "./main.js",
+  "runtime-resource": {
+    "path": "runtime_Ts/",
+    "name": "[2_x]版本"
+  },
+  "reload": {
+    "ignore": [
+      "runtime_Ts/**/*"
+    ]
+  },
+  "main-menu": {
+    "i18n:MAIN_MENU.package.title/i18n:cc-obfuscated-3_x.menu.name/i18n:cc-obfuscated-3_x.menu.argu_set": {
+      "message": "cc-obfuscated-3_x:open_settings_detail_panel",
+      "accelerator": "CmdOrCtrl+Shift+Alt+s",
+      "visible": false
+    },
+    "i18n:MAIN_MENU.package.title/i18n:cc-obfuscated-3_x.menu.name/i18n:cc-obfuscated-3_x.menu.argu_param_web": {
+      "message": "cc-obfuscated-3_x:open_param_web",
+      "accelerator": "CmdOrCtrl+Shift+Alt+s",
+      "visible": true
+    },
+    "i18n:MAIN_MENU.package.title/i18n:cc-obfuscated-3_x.menu.name/i18n:cc-obfuscated-3_x.menu.argu_des": {
+      "message": "cc-obfuscated-3_x:open_setting_panel",
+      "accelerator": "Alt+b",
+      "visible": true
+    },
+    "i18n:MAIN_MENU.package.title/i18n:cc-obfuscated-3_x.menu.name/i18n:cc-obfuscated-3_x.menu.open": {
+      "message": "cc-obfuscated-3_x:open_ob_build",
+      "accelerator": "CmdOrCtrl+Alt+o",
+      "visible": true
+    },
+    "i18n:MAIN_MENU.package.title/i18n:cc-obfuscated-3_x.menu.name/i18n:cc-obfuscated-3_x.menu.close": {
+      "message": "cc-obfuscated-3_x:close_ob_build",
+      "accelerator": "CmdOrCtrl+Alt+c",
+      "visible": true
+    }
+  },
+  "panel.fixed": {
+    "title": "代码混淆 选定 JS 文件混淆",
+    "main": "panel/index.js",
+    "type": "fixed-size",
+    "flags": {
+      "alwaysOnTop": true
+    },
+    "engineSupport": true,
+    "min-width": 500,
+    "min-height": 500,
+    "width": 520,
+    "height": 520
+  },
+  "panel.dockable": {
+    "title": "代码混淆 选定 JS 文件混淆",
+    "main": "panel/index.js",
+    "icon": "panel/icon_build.png",
+    "type": "dockable",
+    "flags": {
+      "alwaysOnTop": true
+    },
+    "engineSupport": true,
+    "min-width": 500,
+    "min-height": 500,
+    "width": 520,
+    "height": 520
+  },
+  "panel.paramWeb": {
+    "title": "混淆 参数 试验面板",
+    "main": "panel/js_ob_web/index.js",
+    "icon": "panel/icon_build.png",
+    "type": "dockable",
+    "flags": {
+      "alwaysOnTop": true
+    },
+    "engineSupport": true,
+    "min-width": 500,
+    "min-height": 500,
+    "width": 620,
+    "height": 620
+  },
+  "panel": {
+    "title": "代码混淆 选定 JS 文件混淆",
+    "main": "panel/index.js",
+    "type": "dockable",
+    "engineSupport": true,
+    "min-width": 500,
+    "min-height": 500,
+    "width": 520,
+    "height": 520
+  },
+  "dependencies": {
+    "@babel/generator": "^7.20.4",
+    "@babel/parser": "^7.20.3",
+    "@babel/types": "^7.20.2",
+    "confusion": "^0.1.1",
+    "deep-dir": "^2.0.2",
+    "deep-files": "^2.0.1",
+    "dir-to-files": "^1.0.2",
+    "escodegen": "^2.0.0",
+    "esprima": "^4.0.1",
+    "fs": "0.0.1-security",
+    "javascript-obfuscator": "^0.28.5",
+    "js-confuser": "^1.5.1",
+    "node-uuid": "^1.4.8",
+    "replaceall": "^0.1.6"
+  },
+  "_storeId": "271dfe054e28b749e47c49caaff38293"
+}

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cocos 代码混淆-较新的版本-4.0-JSOB</title>
+    <script type="text/javascript" src="./jsobTwoPage-javascript-obfuscator-4.0.0.min.js"></script>
+    <style>
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+
+        body {
+            color: wheat;
+            background-color: #0c0c0c;
+        }
+
+        textarea,
+        button {
+            height: 300px;
+            color: wheat;
+            font-size: 22px;
+            background-color: #282a36;
+        }
+
+        button {
+            height: 130px;
+            background-color: #2787a5;
+            font-size: 32px;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="display: flex;flex-direction: column;">
+        <textarea id="jsob_json">
+        {
+            "compact": false,
+            "controlFlowFlattening": true,
+            "controlFlowFlatteningThreshold": 1,
+            "numbersToExpressions": true,
+            "simplify": true,
+            "stringArrayShuffle": true,
+            "splitStrings": true,
+            "stringArrayThreshold": 1
+        }
+    </textarea>
+        <textarea id="jsob_js">
+        (function(){
+            var variable1 = '5' - 3;
+            var variable2 = '5' + 3;
+            var variable3 = '5' + - '2';
+            var variable4 = ['10','10','10','10','10'].map(parseInt);
+            var variable5 = 'foo ' + 1 + 1;
+            console.log(variable1);
+            console.log(variable2);
+            console.log(variable3);
+            console.log(variable4);
+            console.log(variable5);
+            })();
+    </textarea>
+        <button id="jsob_obbtn">开始混淆</button>
+        <h1 id="nowCodeLength">当前代码长度=></h1>
+    </div>
+    <script type="text/javascript">
+        var jsob_jsonDom = document.getElementById("jsob_json");
+        var jsob_jsDom = document.getElementById("jsob_js");
+        var jsob_obbtnDom = document.getElementById("jsob_obbtn");
+        var nowCodeLengthDom = document.getElementById("nowCodeLength");
+        nowCodeLengthDom.innerHTML = "当前代码长度=> <b style='color:red;'>" + readFileBytes(jsob_jsDom.value.length) + "</b>";
+
+        // 读取并混淆
+        var jsob_jsonDomVal = jsob_jsonDom.value;
+        var jsob_jsDomVal = jsob_jsDom.value;
+
+        // 转换比特位
+        function readFileBytes(postLength){
+            if((postLength+"").length>6){
+                return postLength/1000/1000+" Mb";
+            }else if((postLength+"").length>3){
+                return postLength/1000+" Kb";
+            }else{
+                return postLength+" Bytes";
+            };
+        };
+        
+
+        // 开始混淆
+        jsob_obbtnDom.onmousedown = function () {
+            var getTmpLeng = jsob_jsDom.value.length;
+            jsob_jsonDomVal = jsob_jsonDom.value;
+            jsob_jsDomVal = jsob_jsDom.value;
+            jsob_jsDom.value = JavaScriptObfuscator.obfuscate(jsob_jsDomVal, JSON.parse(jsob_jsonDomVal));
+
+            nowCodeLengthDom.innerHTML = "当前代码长度=><b style='color:red;'> " + readFileBytes(getTmpLeng) + "</b> 混淆后 <b style='color:red;'>" + readFileBytes(jsob_jsDom.value.length) + "</b>";
+        };
+
+
+
+        // var obfuscationResult = JavaScriptObfuscator.obfuscate(
+        //     `
+        //     (function(){
+        //         var variable1 = '5' - 3;
+        //         var variable2 = '5' + 3;
+        //         var variable3 = '5' + - '2';
+        //         var variable4 = ['10','10','10','10','10'].map(parseInt);
+        //         var variable5 = 'foo ' + 1 + 1;
+        //         console.log(variable1);
+        //         console.log(variable2);
+        //         console.log(variable3);
+        //         console.log(variable4);
+        //         console.log(variable5);
+        //     })();
+        // `,
+            // {
+            //     compact: false,
+            //     controlFlowFlattening: true,
+            //     controlFlowFlatteningThreshold: 1,
+            //     numbersToExpressions: true,
+            //     simplify: true,
+            //     stringArrayShuffle: true,
+            //     splitStrings: true,
+            //     stringArrayThreshold: 1
+            // }
+        // );
+
+        // console.log(obfuscationResult.getObfuscatedCode());
+    </script>
+</body>
+
+</html>
