@@ -21,5 +21,8 @@
   "dependencies": {
     "is-jpg": "^2.0.0",
     "is-png": "^2.0.0"
+  },
+  "devDependencies": {
+    "json-obfuscator": "^2.0.2"
   }
 }

@@ -1,7 +1,7 @@
 {
   "auto": true,
   "autoAstObfusJs": true,
-  "autoObfusJson": true,
+  "autoObfusJson": false,
   "defaultConfig": {
     "compact": true,
     "selfDefending": true,

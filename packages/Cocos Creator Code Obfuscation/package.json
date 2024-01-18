@@ -107,5 +107,8 @@
     "node-uuid": "^1.4.8",
     "replaceall": "^0.1.6"
   },
-  "_storeId": "271dfe054e28b749e47c49caaff38293"
+  "_storeId": "271dfe054e28b749e47c49caaff38293",
+  "devDependencies": {
+    "json-obfuscator": "^2.0.2"
+  }
 }

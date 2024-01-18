@@ -18,6 +18,9 @@ const JavascriptObfuscatorClass = require('./main2JavascriptObfuscator');
 const Ast_Codeing_Do = require('./ast_codeing_do');
 // 用于快速过滤需要加密的文件
 const ReqDeepFiles = require('deep-files');
+
+const JsonObfuscatorJs = require('json-obfuscator');
+
 /**
  * 遍历文件夹内所有JS文件并返回集合数组
  * @param {string} folderPath - 文件夹路径
@@ -50,7 +53,7 @@ function traverseJSFiles(folderPath) {
 
 /**
  * // 2.1.3 版本不支持这个 json-obfuscator 的功能
-// const JsonObfuscatorJs = require('json-obfuscator');
+ * const JsonObfuscatorJs = require('json-obfuscator');
  */
 
 const PanelManager = require('./main-panel-manager');
@@ -231,6 +234,11 @@ function startJsobFuscate(filePath, options) {
   // Editor.log("[CC]", "[👍][" + usingTime + "s][END][JS-OB] 混淆完成, 已写入 .js 文件\n文件路径为=>\n" + filePath);
 };
 
+function ObfuscateCustom()
+{
+
+}
+
 /**
  * 启动 JavaScript-obfuscate 和 AST 抽象语法树对代码进行混淆
  * @param {*} options 判断当前混淆的平台
@@ -324,8 +332,15 @@ function startJsObAndAstMix(options, buildEndPath) {
     if (is_json_obfusOpenCloseBool) {
       if (options.platform == mixTypeJsonFilesName[0] || options.platform == mixTypeJsonFilesName[1]
         || options.platform == mixTypeJsonFilesName[2] || options.platform == mixTypeJsonFilesName[3]) {
-        Editor.log("[CC]", "[🌟] 准备混淆该目录下所有的 JSON 文件=>\n" + jsonMainPath);
-        JsonObfuscatorJs.obfuscateDir(jsonMainPath);
+        Editor.log("[CC]", "[🌟] 1.0 准备混淆该目录下所有的 JSON 文件=>\n" + jsonMainPath);
+        try {
+          JsonObfuscatorJs.obfuscateDir(jsonMainPath);
+        }
+        catch (e)
+        {
+          Editor.log(`NX: JsonObfuscatorJs.obfuscateDir Error ${e}`);
+        }
+
         Editor.log("[CC]", "[🌟] 该目录下所有的 JSON 文件已混淆完毕=>\n" + jsonMainPath);
       } else {
         // 其它类型
@@ -350,7 +365,6 @@ function startJsObAndAstMix(options, buildEndPath) {
       // Editor.log("[CC]", "[👍] [AST] 抽象语法树 - 混淆完成, 已写入 " + getHunXiaoFile_0 + getHunXiaoFile_1 + " 文件\n文件路径为 => " + buildEndPath);
     };
 
-
     // 开始混淆构建目录下所有的 JSON 文件 [ 2.0 ]
     let jsonMainPath = options.dest;
     let mixTypeJsonFilesName = ["web-mobile", "web-desktop", "wechatgame", "bytedance-mini-game"];
@@ -359,8 +373,14 @@ function startJsObAndAstMix(options, buildEndPath) {
 
       if (options.platform == mixTypeJsonFilesName[0] || options.platform == mixTypeJsonFilesName[1]
         || options.platform == mixTypeJsonFilesName[2] || options.platform == mixTypeJsonFilesName[3]) {
-        Editor.log("[CC]", "[🌟] 准备混淆该目录下所有的 JSON 文件=>\n" + jsonMainPath);
-        JsonObfuscatorJs.obfuscateDir(jsonMainPath);
+        Editor.log("[CC]", "[🌟] 2.0 准备混淆该目录下所有的 JSON 文件=>\n" + jsonMainPath);
+        try {
+          JsonObfuscatorJs.obfuscateDir(jsonMainPath);
+        }
+        catch (e)
+        {
+          Editor.log(`NX: JsonObfuscatorJs.obfuscateDir Error ${e}`);
+        }
         Editor.log("[CC]", "[🌟] 该目录下所有的 JSON 文件已混淆完毕=>\n" + jsonMainPath);
       } else {
         // 其它类型
@@ -426,7 +446,8 @@ module.exports = {
 
     // builder_changed
     Editor.Builder.on('build-start', this.onBuiStartEvent);
-    Editor.Builder.on('before-change-files', this.builder_changed);
+    // Editor.Builder.on('before-change-files', this.builder_changed);
+    Editor.Builder.on('build-finished', this.builder_changed);
   },
 
   /**
@@ -438,7 +459,8 @@ module.exports = {
 
     // builder_changed
     Editor.Builder.removeListener('build-start', this.onBuiStartEvent);
-    Editor.Builder.removeListener('before-change-files', this.builder_changed);
+    // Editor.Builder.removeListener('before-change-files', this.builder_changed);
+    Editor.Builder.removeListener('build-finished', this.builder_changed);
   },
   /**
    * 
@@ -479,19 +501,33 @@ module.exports = {
       // var getAlljsListArr0=traverseJSFiles(options.dest);
       // 递归处理目录
       var getBuildAllFilesJsArray = ReqDeepFiles(options.dest, "*.{js,}");
+
+      //for (let i = 0; i < getBuildAllFilesJsArray.length; i++) {
+        //cclog(`NX: script file path:${getBuildAllFilesJsArray[i]}`);
+        //let content = Fs.readFileSync(getBuildAllFilesJsArray[i], 'utf8');
+        //cclog(`NX ${content}`);
+     // }
+
       var tmpBuildPath = "", tmpBuildFilePathArray = [];
       for (var jj0 = 0; jj0 < getBuildAllFilesJsArray.length; jj0++) {
         tmpBuildPath = getBuildAllFilesJsArray[jj0];
         tmpBuildPath = tmpBuildPath.replace(new RegExp(/\\/, 'g'), '/');
         tmpBuildPath = tmpBuildPath.replace(new RegExp(/\"/, 'g'), '');
         tmpBuildPath = tmpBuildPath.replace(new RegExp(/\'/, 'g'), '');
-        if (rqpathGet.basename(tmpBuildPath).match("vconsole") || rqpathGet.basename(tmpBuildPath).match("physics") || rqpathGet.basename(tmpBuildPath).match("cocos") || rqpathGet.basename(tmpBuildPath).match("cocos2d") || rqpathGet.basename(tmpBuildPath).match("cocos-2d") || rqpathGet.basename(tmpBuildPath).match("cc")) {
+        if (rqpathGet.basename(tmpBuildPath).match("vconsole") || rqpathGet.basename(tmpBuildPath).match("physics") || rqpathGet.basename(tmpBuildPath).match("cocos") || rqpathGet.basename(tmpBuildPath).match("cocos2d") || rqpathGet.basename(tmpBuildPath).match("cocos-2d") || rqpathGet.basename(tmpBuildPath).match("/^cc$/")) {
           cclog(`[CC][XOR][JS][✍][XXX][${rqpathGet.basename(tmpBuildPath)}] 这个 .js 文件可能是引擎文件，不予混淆==> \n`, tmpBuildPath);
         } else {
           // this.FsWriteFile(tmpBuildPath, JavascriptObfuscator.obfuscate(this.FsReadUtf8File(tmpBuildPath), get_isnOpenStartObProjJS_startOBJS));
           // 开始混淆 js 代码
           // this.FsWriteFile(tmpBuildPath, JavascriptObfuscator.obfuscate(this.FsReadUtf8File(tmpBuildPath), get_isnOpenStartObProjJS_startOBJS));
+
+
+          cclog(`NX:startJsObAndAstMix Start ${tmpBuildPath}`);
+
           startJsObAndAstMix(options, tmpBuildPath);
+
+          cclog(`NX:startJsObAndAstMix End ${tmpBuildPath}`);
+
           tmpBuildFilePathArray.push(tmpBuildPath);
           cclog(`[CC][XOR][JS][✍][✅][${rqpathGet.basename(tmpBuildPath)}] 当前正在递归混淆的 .js 文件==> \n`, tmpBuildPath);
           // cclog(`[CC][XOR][JS][✍][XXX][${rqpathGet.basename(tmpBuildPath)}] 这个 .js 文件可能是引擎文件，不予混淆==> \n`, tmpBuildPath);
@@ -499,7 +535,10 @@ module.exports = {
       };
       // cclog(`[CC][XOR][JS][✍][✅✅✅][总计] 当前已经递归混淆的 .js 文件集合==> \n`, [getAlljsListArr0,options.dest,tmpBuildFilePathArray,getBuildAllFilesJsArray]);
       cclog(`[CC][XOR][JS][✍][✅✅✅][总计] 当前已经递归混淆的 .js 文件集合==> \n`, [options.dest, tmpBuildFilePathArray, getBuildAllFilesJsArray]);
-    }, 1323);
+
+      Editor.Ipc.sendToPanel('res-compress', 'res-compress:obfuscate_finish');
+
+    }, 2323);
 
     // setTimeout(()=>{
     //   var getAlljsListArr1=traverseJSFiles(options.dest);
@@ -564,7 +603,9 @@ module.exports = {
 
 
     // 必须回传, 不然闪崩, 而且构建面板的进度条不走完的....
-    callback();
+
+    callback && callback();
+
     // 必须回传, 不然闪崩, 而且构建面板的进度条不走完的....
   },
 
@@ -874,6 +915,11 @@ module.exports = {
         console.error("[CC]", "[❌][SELECT]" + " 请选择一个需要混淆的 JS 文件 !");
         Editor.log("[CC]", "[❌][SELECT]" + " 请选择一个需要混淆的 JS 文件 !");
       };
+    },
+    'obfuscate_custom'(preventDefault, options)
+    {
+      Editor.log(`NX: IPC obfuscate_custom platform: ${options.platform} dest:${options.dest}`);
+      this.builder_changed(options)
     },
   },
 };

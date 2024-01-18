@@ -1,0 +1,72 @@
+{
+    "101": {
+        "ID": 101,
+        "Function": "MatchRobotTime",
+        "Parameter": "8"
+    },
+    "102": {
+        "ID": 102,
+        "Function": "QuestRefreshTime",
+        "Parameter": "5"
+    },
+    "103": {
+        "ID": 103,
+        "Function": "MatchResultShowTime",
+        "Parameter": "2"
+    },
+    "104": {
+        "ID": 104,
+        "Function": "StartPrepareTime",
+        "Parameter": "3"
+    },
+    "105": {
+        "ID": 105,
+        "Function": "GameRow",
+        "Parameter": "7"
+    },
+    "106": {
+        "ID": 106,
+        "Function": "GameColumn",
+        "Parameter": "7"
+    },
+    "107": {
+        "ID": 107,
+        "Function": "AccountInitGold",
+        "Parameter": "4000"
+    },
+    "108": {
+        "ID": 108,
+        "Function": "AccountInitSkill",
+        "Parameter": "101,3|102,3|103,3"
+    },
+    "109": {
+        "ID": 109,
+        "Function": "RobotTrophyRange",
+        "Parameter": "0.2"
+    },
+    "110": {
+        "ID": 110,
+        "Function": "GoldIcon",
+        "Parameter": "Texture/Common/ui_common_icon_gold"
+    },
+    "111": {
+        "ID": 111,
+        "Function": "TrophyIcon",
+        "Parameter": "Texture/Common/ui_common_icon_trophy"
+    },
+    "112": {
+        "ID": 112,
+        "Function": "MultiBuyNum",
+        "Parameter": "5"
+    },
+    "113": {
+        "ID": 113,
+        "Function": "LeaderboardMaxNum",
+        "Parameter": "20"
+    },
+    "114": {
+        "ID": 114,
+        "Function": "SwitchTurnWaitingTime",
+        "Parameter": "2"
+    }
+}

@@ -1265,13 +1265,9 @@ Editor.Panel.extend({
                 },
                 onObfuscateFinish()  //文件混淆完成
                 {
-
                     if(this.obfuscateFullPath != '' && this.obfuscateTempPath != '')
                     {
-                        Editor.log(`NX: obfuscateTempPath: ${this.obfuscateTempPath}`);
-
                         this._copyFile(this.obfuscateTempPath, this.obfuscateFullPath);
-
                         this._deleteFile(this.obfuscateTempPath);
                         this._addLog(`NX: obfuscate end ${this.obfuscateFullPath}`);
                         Editor.log(`NX: obfuscate end ${this.obfuscateFullPath}`);
