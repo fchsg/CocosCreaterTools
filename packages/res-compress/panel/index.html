@@ -25,7 +25,40 @@
                     <ui-checkbox id="check_auto_strip_log" title="[导出包时是否自动去除LOG]" value=false" v-on:change = "onBuildStripLog"></ui-checkbox>
                     [导出包时是否自动去除LOG]
                 </div>
+                <div>
+                    <ui-checkbox id="check_obfuscate" title="[是否自动开启混淆]" value=false" v-on:change = "onBuildObfuscation"></ui-checkbox>
+                    [是否自动开启混淆]
+                </div>
             </ui-prop>
+        </ui-section>
+
+        <ui-section>
+            <div class="header yellowColor">导出包混淆脚本</div>
+            <ui-prop name="请选择混淆脚本的文件或目录"
+                     v-on:drop="onDropObfuscateFolder"
+                     v-on:dragover="drag"
+                     v-on:dragenter="drag"
+                     v-on:dragleave="drag">
+                <ui-input v-value="obfuscatePath" class="flex-1"
+                          placeholder="拖拽文件夹,文件或输入路径到这里">
+                </ui-input>
+                <ui-button   v-on:confirm="onBtnOpenObfuscateFolder">打开文件夹</ui-button>
+                <ui-button   v-on:confirm="onBtnOpenObfuscateFile">打开文件</ui-button>
+                <ui-button   v-on:confirm="onBtnRefreshObfuscateList">刷新列表</ui-button>
+                <ui-button   v-on:confirm="onBtnObfuscateAll">混淆全部</ui-button>
+            </ui-prop>
+            <div class="wrapper center layout horizontal">
+                <div class="box flex-1"> 序号</div>
+                <div class="box flex-3"> 文件</div>
+                <div class="box flex-1"> 打开</div>
+                <div class="box flex-1"> 混淆脚本</div>
+            </div>
+            <div>
+                <obfuscation-log-item track-by="$index" v-for="(index,item) in obfuscateFileList"
+                                v-bind:data="item"
+                                v-bind:index="index">
+                </obfuscation-log-item>
+            </div>
         </ui-section>
 
         <ui-section>

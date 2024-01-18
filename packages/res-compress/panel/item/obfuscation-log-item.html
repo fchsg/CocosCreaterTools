@@ -1,0 +1,15 @@
+<div class="wrapper center layout horizontal"
+     style="height: 40px;
+     background-color: #252525;"
+     onmouseover="this.style.backgroundColor='#505050'"
+     onmouseout="this.style.backgroundColor='#252525'"
+>
+    <div class="box flex-1"> {{index+1}}</div>
+    <div class="box flex-3 layout horizontal center">{{data.path}}</div>
+    <div class="box flex-1 layout horizontal center ">
+        <ui-button class="tiny" v-on:confirm="onBtnClickOpen">打开</ui-button>
+    </div>
+    <div class="box flex-1 layout horizontal center ">
+        <ui-button class="tiny" v-on:confirm="onBtnClickObfuscate">混淆</ui-button>
+    </div>
+</div>

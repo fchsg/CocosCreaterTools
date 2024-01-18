@@ -7,4 +7,6 @@ module.exports = {
     OpenAudioOut:'OpenAudioOut',
     OpenStripLog:'OpenStripLog',
     ExecuteStripLog:'ExecuteStripLog',
+    OpenObfuscateFolder:'OpenObfuscateFolder',
+    ExecuteObfuscate:'ExecuteObfuscate',
 }

@@ -11,6 +11,7 @@ Editor.require('packages://res-compress/panel/item/image-item.js')();
 Editor.require('packages://res-compress/panel/item/mp3item-out.js')();
 Editor.require('packages://res-compress/panel/item/image-item-out.js')();
 Editor.require('packages://res-compress/panel/item/strip-log-item.js')();
+Editor.require('packages://res-compress/panel/item/obfuscation-log-item.js')();
 
 // 同步执行exec
 child_process.execPromise = function (cmd, options, callback, callbackSuccess) {
@@ -64,7 +65,7 @@ Editor.Panel.extend({
         check_auto_compress_audio:'#check_auto_compress_audio',
         check_auto_strip_log:'#check_auto_strip_log',
         ui_select_imagecompress:'#ui_select_imagecompress',
-
+        check_obfuscate:'#check_obfuscate',
     },
     ready () {
         let logCtrl = this.$logTextArea;
@@ -107,14 +108,19 @@ Editor.Panel.extend({
                 this.$root.$on(Msg.OpenAudioOut, (data) => { //项目外单个音频打开按钮
                     this._openMp3Out(data);
                 });
-                this.$root.$on(Msg.OpenStripLog, (data) => {  //去除全部文件log
+                this.$root.$on(Msg.OpenStripLog, (data) => {
                     this._openStripLog(data);
                 });
                 this.$root.$on(Msg.ExecuteStripLog, (data) => { //去除单个文件log
                     this._executeStripLog(data);
                 });
 
-
+                this.$root.$on(Msg.OpenObfuscateFolder, (data) => {
+                    this._openObfuscateFolder(data);
+                });
+                this.$root.$on(Msg.ExecuteObfuscate, (data) => { //去除单个文件log
+                    this._executeObfuscate(data);
+                });
                 this._readNodeVersion();
                 this._readConfig();
                 this._refreshUIState();
@@ -129,9 +135,11 @@ Editor.Panel.extend({
                 compressCustomImagePath:null,
                 compressCustomAudioPath:null,
                 stripLogPath:null,
+                obfuscatePath:null,
                 customAudioList: [],
                 customImageList: [],
                 stripLogList:[],
+                obfuscateFileList:[],
                 totalOriginSize:0.0,
                 totalCompressSize:0.0,
                 ErrorCompressImageList:[],
@@ -139,13 +147,17 @@ Editor.Panel.extend({
                 checkbox_auto_compress_audio:this.$check_auto_compress_audio,
                 checkbox_check_auto_strip_log:this.$check_auto_strip_log,
                 select_imagecompress:this.$ui_select_imagecompress,
+                checkbox_check_obfuscate:this.$check_obfuscate,
                 configObj : {
                     compress_type : 0,   //0: imagemin  tinypng,1:image smushit , 2:image smushit  tinypng
                     build_auto_compress_audio : false,
                     build_auto_compress_image : false,
                     build_auto_strip_log : false,
+                    build_auto_obfuscate : false,
                 },
                 logImageList:[],
+                obfuscateFullPath:'',
+                obfuscateTempPath:''
             },
             methods: {
                 _addLog (str) {
@@ -860,6 +872,7 @@ Editor.Panel.extend({
                     this.checkbox_auto_compress_image.value = this.configObj.build_auto_compress_image;
                     this.checkbox_auto_compress_audio.value = this.configObj.build_auto_compress_audio;
                     this.checkbox_check_auto_strip_log.value = this.configObj.build_auto_strip_log;
+                    this.checkbox_check_obfuscate.value = this.configObj.build_auto_obfuscate;
                 },
                 _getLocalConfigPath()
                 {
@@ -933,7 +946,7 @@ Editor.Panel.extend({
                     this.configObj.build_auto_strip_log = this.checkbox_check_auto_strip_log.value;
                     this._saveConfig();
                 },
-                 onBeforeBuildFinish(buildFolder, callback)
+                onBeforeBuildFinish(buildFolder, callback)
                 {
                     if(callback)
                     {
@@ -944,7 +957,6 @@ Editor.Panel.extend({
                 {
                     this.logImageList = [];
                 },
-
                 _RecordLog(path)
                 {
                     const files = this._getFileList(path);
@@ -1114,10 +1126,182 @@ Editor.Panel.extend({
                         let cmd = `${Tools.stripLog} --fileName ${fileName}` ;
                         //this._addLog(`NX: cmd: ${cmd}`);
                         await child_process.execPromise(cmd);
-                        this._copyFile(outFullPath,fileFullPath);
+                        this._copyFile(outFullPath, fileFullPath);
                         this._deleteFile(inFullPath);
                         this._deleteFile(outFullPath);
                         this._addLog(`NX: strip log end`);
+                    }
+                },
+                onDropObfuscateFolder (event) {
+                    event.preventDefault();
+                    let files = event.dataTransfer.files;
+                    if (files.length > 0) {
+                        let file = files[0].path;
+                        this.obfuscatePath = file;
+                        this._FindObfuscateFile();
+                    } else {
+                    }
+                },
+                _FindObfuscateFile () {
+                    let customPath =  this.obfuscatePath;
+                    if (customPath != null && customPath != "")
+                    {
+                        this.obfuscateFileList = [];
+                        let fileList =  this._getFileList(customPath);
+                        for (let i = 0; i < fileList.length; i++)
+                        {
+                            let fullPath = fileList[i];
+                            let ext = Path.extname(fullPath).toLowerCase();
+                            let fileSize = this._getFileSize(fullPath);
+                            let data = {
+                                path : fullPath,
+                                size : fileSize,
+                                displaySize : `${fileSize}KB`,
+                            }
+                            if ( ext === '.js' || ext == '.json')
+                            {
+                                this.obfuscateFileList.push(data);
+                            }
+                        }
+                        this._sortArrByFileSize(this.obfuscateFileList);
+                    }
+                },
+                onBtnOpenObfuscateFolder() {
+                    let defaultFolder = this._getOpenDefaultFolder();
+                    let res = Editor.Dialog.openFile({
+                        title: "选择去除LOG的目录或文件",
+                        defaultPath: defaultFolder,
+                        properties: ['openDirectory'],
+                    });
+                    if (res !== -1) {
+                        let dir = res[0];
+                        this.obfuscatePath = dir;
+                        this._FindObfuscateFile();
+                    }
+                    else
+                    {
+                        this._addLog("NX:打开目录为空: ");
+                    }
+                },
+                onBtnOpenObfuscateFile() {
+                    let defaultFolder = this._getOpenDefaultFolder();
+                    let res = Editor.Dialog.openFile({
+                        title: "选择去除LOG的目录或文件",
+                        defaultPath: defaultFolder,
+                        properties: ['openFile'],
+                    });
+                    if (res !== -1) {
+                        let dir = res[0];
+                        this.obfuscatePath = dir;
+                        this._FindStripLogFile();
+                    }
+                    else
+                    {
+                        this._addLog("NX:打开目录为空: ");
+                    }
+                },
+                onBtnRefreshObfuscateList()
+                {
+                    this._FindObfuscateFile();
+                    for (let i = 0; i < this.obfuscateFileList.length; i++)
+                    {
+                        this._addLog(this.obfuscateFileList[i].path);
+                    }
+                },
+                _GetPlatform()
+                {
+                    let path = Path.join(Editor.Project.path, 'local/builder.json');
+                    let platform = 'web-mobile';
+                    if(Fs.existsSync(path))
+                    {
+                        let content = Fs.readFileSync(path, 'utf-8');
+                        if (content && content != "")
+                        {
+                            let configObj = JSON.parse(content);
+                            if (configObj && configObj.platform)
+                            {
+                                platform = configObj.platform;
+                            }
+                        }
+                    }
+                    return platform;
+                },
+                async onBtnObfuscateAll()//混淆全部脚本
+                {
+                    if(this.obfuscatePath && this.obfuscatePath != "")
+                    {
+                        let platform = this._GetPlatform();
+                        let options = {
+                            platform : platform,
+                            dest : this.obfuscatePath,
+                        }
+                        //Editor.log(`NX: IPC obfuscate_custom platform: ${options.platform} dest:${options.dest}`);
+                        Editor.Ipc.sendToAll('cc-obfuscated-3_x:obfuscate_custom', options);
+                    }
+                },
+                _openObfuscateFolder(data)
+                {
+                    this._customOpenFile(data.path)
+                },
+                _executeObfuscate(data)//混淆单个文件
+                {
+                    let fileFullPath = data.path;
+                    if(Fs.existsSync(fileFullPath))
+                    {
+                        this.obfuscateFullPath = fileFullPath;
+                        this._addLog(`NX: obfuscate start ${fileFullPath}`);
+                        Editor.log(`NX: obfuscate start ${fileFullPath}`);
+                        let fileName = Path.basename(fileFullPath);
+                        let tempFolder = this._getTempDir();
+                        this.obfuscateTempPath = Path.join(tempFolder, fileName);
+                        this._copyFile(this.obfuscateFullPath,  this.obfuscateTempPath);
+                        let platform = this._GetPlatform();
+                        let options = {
+                            platform : platform,
+                            dest : tempFolder,
+                        }
+                        Editor.Ipc.sendToAll('cc-obfuscated-3_x:obfuscate_custom', options);
+                    }
+                },
+                onObfuscateFinish()  //文件混淆完成
+                {
+
+                    if(this.obfuscateFullPath != '' && this.obfuscateTempPath != '')
+                    {
+                        Editor.log(`NX: obfuscateTempPath: ${this.obfuscateTempPath}`);
+
+                        this._copyFile(this.obfuscateTempPath, this.obfuscateFullPath);
+
+                        this._deleteFile(this.obfuscateTempPath);
+                        this._addLog(`NX: obfuscate end ${this.obfuscateFullPath}`);
+                        Editor.log(`NX: obfuscate end ${this.obfuscateFullPath}`);
+                        this.obfuscateFullPath = '';
+                        this.obfuscateTempPath = '';
+                    }
+
+                },
+                onBuildObfuscation()
+                {
+                    this.configObj.build_auto_obfuscate = this.checkbox_check_obfuscate.value;
+                    this._saveConfig();
+                    this.SetAutoObfuscate(this.configObj.build_auto_obfuscate);
+                },
+                SetAutoObfuscate(b)//保存导出包后自动缓存混淆数据
+                {
+                    let configPath = Path.join(Editor.Project.path, 'packages/Cocos Creator Code Obfuscation/runtime_Ts/cc_obfuscated_js.json');
+                    if(Fs.existsSync(configPath))
+                    {
+                        let content = Fs.readFileSync(configPath, 'utf-8');
+                        if (content && content != "")
+                        {
+                            let configObj = JSON.parse(content);
+                            configObj.auto = b;
+                            let saveStr =JSON.stringify(configObj,null, 2);
+                            if (Fs.existsSync(configPath)) {
+                                Fs.unlinkSync(configPath);
+                            }
+                            Fs.writeFileSync(configPath, saveStr);
+                        }
                     }
                 },
         }
@@ -1144,5 +1328,11 @@ Editor.Panel.extend({
         'res-compress:compress' (buildFolder, callback) {
                plugin.onBeforeBuildFinish(buildFolder, callback);
         },
+        'res-compress:obfuscate_finish' ()
+        {
+            setTimeout(function () {
+                plugin.onObfuscateFinish();
+            }, 200);
+        }
     }
 });

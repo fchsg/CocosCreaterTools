@@ -329,9 +329,10 @@ function  GetStripLogCmd()
     return cmd;
 }
 
-async function StripLogAsync(folder)
+async function StripLogAsync(buildFolder)
 {
-    let fileList = GetAllScriptFiles(folder);
+    let stripLogFolder = Path.join(buildFolder, 'assets');  //去除导出包assets目录下的脚本log
+    let fileList = GetAllScriptFiles(stripLogFolder);
     for (let i = 0; i < fileList.length; i++)
     {
         let fileFullPath = fileList[i];
@@ -354,6 +355,7 @@ async function StripLogAsync(folder)
        Log(`strip log end`);
     }
 }
+
 async function  BuildCompress(options, callback)
 {
     let buildFolder = options.dest;
@@ -361,6 +363,10 @@ async function  BuildCompress(options, callback)
     Log(`Build Folder: ${buildFolder}`);
     ResetLog();
     let configObj = ReadConfig();
+    if(configObj.build_auto_strip_log)
+    {
+        await StripLogAsync(buildFolder)
+    }
     if (configObj.build_auto_compress_audio)
     {
         await CompressAudioAsync(buildFolder);
@@ -368,11 +374,6 @@ async function  BuildCompress(options, callback)
     if (configObj.build_auto_compress_image)
     {
         await CompressImageAsync(configObj.compress_type, buildFolder);
-    }
-    if(configObj.build_auto_strip_log)
-    {
-        let stripLogFolder = Path.join(buildFolder, 'assets');
-        await StripLogAsync(stripLogFolder);
     }
     PrintLog();
     if (callback)

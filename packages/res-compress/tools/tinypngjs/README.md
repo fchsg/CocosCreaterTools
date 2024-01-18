@@ -1,3 +1,7 @@
+test script
+cd .\packages\res-compress\tools\tinypngjs\
+node .\main.js compress_image_folder
+
 ---
 description: Tinify API client for Node.js
 ---
