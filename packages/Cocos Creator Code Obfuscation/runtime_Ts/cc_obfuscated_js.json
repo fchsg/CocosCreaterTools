@@ -1,5 +1,5 @@
 {
-  "auto": true,
+  "auto": false,
   "autoAstObfusJs": true,
   "autoObfusJson": false,
   "defaultConfig": {
