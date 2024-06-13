@@ -6,4 +6,4 @@ res-compress图片压缩
 resize-image修改图片尺寸
 gulp imagemin smushit 图片压缩
 
-[![图片压缩](/blob/main/readme/1718259651572.png "Shiprock")]
+[![图片压缩](../readme/1718259651572.png "Shiprock")]
