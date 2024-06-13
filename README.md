@@ -7,14 +7,13 @@ resize-image修改图片尺寸
 gulp imagemin smushit 图片压缩
 
 ## 图片压缩
-![img1](readme/1718259651572.png)
+![img1](image/1.png)
 
 ## 图片修改尺寸
-![img2](readme/1718259661842.png)
+![img2](image/2.png)
 
 ## 音频压缩
-![img3](readme/1718259681568.png)
+![img3](image/3.png)
 
-## 代码混淆
-![img4](readme/1718259751903.png)
+
 
