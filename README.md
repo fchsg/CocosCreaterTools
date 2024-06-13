@@ -9,3 +9,12 @@ gulp imagemin smushit 图片压缩
 ## 图片压缩
 ![img1](readme/1718259651572.png)
 
+## 图片修改尺寸
+![img1](readme/1718259661842.png)
+
+## 音频压缩
+![img1](readme/1718259681568.png)
+
+## 代码混淆
+![img1](readme/1718259751903.png)
+
